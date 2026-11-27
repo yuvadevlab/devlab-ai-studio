@@ -1,0 +1,215 @@
+/**
+ * @file apps/web/src/styles/studio-marketing.css
+ * @description Public SEO landing and capability page styles under @layer dl-app.
+ */
+
+@layer dl-app {
+  .studio-mkt-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  .studio-mkt-header {
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in oklab, var(--card) 85%, transparent);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .studio-mkt-header-inner,
+  .studio-mkt-main,
+  .studio-mkt-footer-inner {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-inline: 24px;
+  }
+
+  .studio-mkt-header-inner {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .studio-mkt-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .studio-mkt-nav a {
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--muted-foreground);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .studio-mkt-nav a:hover {
+    color: var(--foreground);
+    background: color-mix(in oklab, var(--muted) 65%, transparent);
+  }
+
+  .studio-mkt-nav a.is-active {
+    color: var(--primary);
+    background: color-mix(in oklab, var(--primary) 12%, transparent);
+    font-weight: 600;
+  }
+
+  .studio-mkt-main {
+    flex: 1;
+    padding-block: 56px 72px;
+    display: grid;
+    gap: 56px;
+  }
+
+  .studio-mkt-hero {
+    position: relative;
+    display: grid;
+    gap: 18px;
+    padding: clamp(28px, 4vw, 48px);
+    border-radius: 16px;
+    border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--border));
+    background:
+      radial-gradient(
+        ellipse 80% 70% at 10% 0%,
+        color-mix(in oklab, var(--primary) 18%, transparent),
+        transparent 65%
+      ),
+      radial-gradient(
+        ellipse 60% 60% at 92% 15%,
+        color-mix(in oklab, #10b981 12%, transparent),
+        transparent 60%
+      ),
+      color-mix(in oklab, var(--card) 80%, var(--background));
+    overflow: hidden;
+  }
+
+  .studio-mkt-hero h1 {
+    margin: 0;
+    max-width: 780px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 720;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+  }
+
+  .studio-mkt-hero p {
+    margin: 0;
+    max-width: 720px;
+    color: var(--muted-foreground);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .studio-mkt-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 8px;
+  }
+
+  .studio-mkt-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .studio-mkt-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .studio-mkt-card {
+    display: grid;
+    gap: 10px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .studio-mkt-card h2,
+  .studio-mkt-card h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 640;
+  }
+
+  .studio-mkt-card p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .studio-mkt-faq {
+    display: grid;
+    gap: 12px;
+  }
+
+  .studio-mkt-faq h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 650;
+  }
+
+  .studio-mkt-footer {
+    border-top: 1px solid var(--border);
+    padding-block: 24px;
+    color: var(--muted-foreground);
+    font-size: 12px;
+  }
+
+  .studio-mkt-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .studio-mkt-footer-links {
+    display: flex;
+    gap: 16px;
+  }
+
+  .studio-mkt-footer-links a {
+    color: var(--muted-foreground);
+    text-decoration: none;
+  }
+
+  .studio-mkt-footer-links a:hover {
+    color: var(--foreground);
+  }
+
+  .studio-mkt-footer-links a.is-active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  @media (max-width: 860px) {
+    .studio-mkt-nav {
+      display: none;
+    }
+
+    .studio-mkt-grid,
+    .studio-mkt-grid-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+}

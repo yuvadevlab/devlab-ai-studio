@@ -9,7 +9,8 @@ import { AuthQueryParamKey } from "./auth.constants";
 
 /** Canonical Next.js App Router paths in Studio Web. */
 export const StudioWebRoute = {
-  OVERVIEW: "/",
+  HOME: "/",
+  OVERVIEW: "/overview",
   PROVIDERS: "/providers",
   MODELS: "/models",
   APPS: "/apps",
