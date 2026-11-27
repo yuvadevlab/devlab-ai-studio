@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@devlab-ai-studio/shared-types": "workspace:*",
+    "@yuva-devlab/agent-protocol": "^0.2.0",
     "@yuva-devlab/regex": "^0.4.1",
     "zod": "^3.25.76"
   },

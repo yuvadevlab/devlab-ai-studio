@@ -78,4 +78,12 @@ export class ProfilesRepository {
       data: { publishedVersionId: versionId },
     });
   }
+
+  findModelsByIds(ids: string[]) {
+    if (ids.length === 0) return Promise.resolve([]);
+    return this.prisma.client.modelCatalog.findMany({
+      where: { id: { in: ids }, isActive: true },
+      include: { provider: true },
+    });
+  }
 }

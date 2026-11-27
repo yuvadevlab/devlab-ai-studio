@@ -11,6 +11,8 @@ export interface ApiConfig {
   logLevel: LogLevel;
   logRequests: boolean;
   masterKeyHex: string;
+  portalApiUrl: string;
+  appId: string;
 }
 
 /** Parses and validates process environment variables using {@link apiEnvSchema}. */
@@ -28,6 +30,8 @@ export function loadApiConfig(): ApiConfig {
     logLevel: env.LOG_LEVEL,
     logRequests: env.LOG_REQUESTS,
     masterKeyHex: env.MASTER_KEY_HEX,
+    portalApiUrl: env.DEVLAB_PORTAL_API_URL,
+    appId: env.DEVLAB_APP_ID,
   };
 }
 

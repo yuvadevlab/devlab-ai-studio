@@ -26,6 +26,8 @@ export const apiEnvSchema = z
     LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
     LOG_REQUESTS: booleanFlagSchema,
     MASTER_KEY_HEX: z.string().regex(HEX_64_REGEX).optional(),
+    DEVLAB_PORTAL_API_URL: z.string().url().default("http://localhost:4000"),
+    DEVLAB_APP_ID: z.string().min(1).default("ai-studio"),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== "production") return;

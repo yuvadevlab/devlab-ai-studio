@@ -4,9 +4,12 @@ import { StudioApiRoute } from "@devlab-ai-studio/shared-types";
 import {
   createConsumerAppSchema,
   updateConsumerAppSchema,
+  verifyAppKeySchema,
   type CreateConsumerAppInput,
   type UpdateConsumerAppInput,
+  type VerifyAppKeyInput,
 } from "@devlab-ai-studio/validation";
+import { Public } from "../../common/auth/public.decorator";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { AppsService } from "./apps.service";
 
@@ -46,5 +49,12 @@ export class AppsController {
   @ApiOperation({ summary: "Rotate gateway API key for a consumer app" })
   rotateAppKey(@Param("slug") slug: string) {
     return this.appsService.rotateAppKey(slug);
+  }
+
+  @Public()
+  @Post(StudioApiRoute.APPS_VERIFY_KEY)
+  @ApiOperation({ summary: "Verify a consumer app gateway key and return app metadata" })
+  verifyAppKey(@Body(new ZodValidationPipe(verifyAppKeySchema)) body: VerifyAppKeyInput) {
+    return this.appsService.verifyAppKey(body.appKey);
   }
 }

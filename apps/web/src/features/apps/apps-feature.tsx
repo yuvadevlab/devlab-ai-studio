@@ -14,6 +14,7 @@ import {
 } from "@devlab-ai-studio/ui";
 import { StudioQueryKey, StudioWebDefaults } from "@/constants/routes.constants";
 import { STUDIO_WEB_COPY } from "@/constants/ui-copy";
+import { notifyStudioError } from "@/lib/studio-error";
 import { useActiveApp } from "@/lib/active-app";
 import {
   createApp,
@@ -71,7 +72,7 @@ export function AppsFeature() {
       setDrawerOpen(false);
       toast.success(STUDIO_WEB_COPY.APPS.APP_CREATED);
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const updateMutation = useMutation({
@@ -88,7 +89,7 @@ export function AppsFeature() {
       setDrawerOpen(false);
       toast.success(STUDIO_WEB_COPY.APPS.APP_UPDATED);
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const deleteMutation = useMutation({
@@ -97,7 +98,7 @@ export function AppsFeature() {
       void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.APPS] });
       toast.success(STUDIO_WEB_COPY.APPS.APP_DELETED);
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const rotateMutation = useMutation({
@@ -107,7 +108,7 @@ export function AppsFeature() {
       void navigator.clipboard?.writeText(res.appKey).catch(() => undefined);
       toast.success(STUDIO_WEB_COPY.APPS.KEY_ROTATED);
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const openDrawer = (app?: StudioConsumerApp) => {

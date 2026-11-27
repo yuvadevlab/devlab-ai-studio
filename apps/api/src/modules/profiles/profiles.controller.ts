@@ -9,6 +9,7 @@ import {
   type CreateProfileVersionInput,
   type PublishProfileVersionInput,
 } from "@devlab-ai-studio/validation";
+import { Public } from "../../common/auth/public.decorator";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { ProfilesService } from "./profiles.service";
 
@@ -42,6 +43,7 @@ export class ProfilesController {
     return this.profilesService.publishVersion(appSlug, profileSlug, body);
   }
 
+  @Public()
   @Post(`:profileSlug/${StudioApiRoute.PROFILE_RESOLVE}`)
   @ApiOperation({
     summary: "Resolve effective model, fallback chain, and clamped policy for a profile",

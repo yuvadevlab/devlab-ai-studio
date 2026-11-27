@@ -6,15 +6,20 @@ import {
   type AppAiPolicyOverrides,
   type CreateProfileVersionInput,
   type PublishProfileVersionInput,
+  type ResolvedModelTarget,
   type ResolvedProfileResponse,
 } from "@devlab-ai-studio/validation";
+import { CryptoService } from "../../common/crypto/crypto.service";
 import { ProfilesRepository } from "./profiles.repository";
 
 @Injectable()
 export class ProfilesService {
   private readonly logger = new Logger(ProfilesService.name);
 
-  constructor(private readonly repository: ProfilesRepository) {}
+  constructor(
+    private readonly repository: ProfilesRepository,
+    private readonly crypto: CryptoService,
+  ) {}
 
   async listProfiles(appSlug: string) {
     this.logger.info(`[listProfiles] Listing profiles for app "${appSlug}"`);
@@ -81,16 +86,43 @@ export class ProfilesService {
       features: activeVersion.featureFlags,
     });
 
+    const fallbackRecords = await this.repository.findModelsByIds(activeVersion.fallbackModelIds);
+    const fallbackById = new Map(fallbackRecords.map((model) => [model.id, model]));
+    const orderedFallbacks = activeVersion.fallbackModelIds
+      .map((id) => fallbackById.get(id))
+      .filter((model): model is NonNullable<typeof model> => Boolean(model));
+
+    const toModelTarget = (model: typeof activeVersion.primaryModel): ResolvedModelTarget => ({
+      id: model.id,
+      providerId: model.provider.id,
+      provider: model.provider.slug,
+      modelId: model.modelId,
+      baseUrl: model.provider.baseUrl,
+      apiKey: this.decryptProviderKey(model.provider.encryptedApiKey),
+      inputCostPer1M: Number(model.inputCostPer1M),
+      outputCostPer1M: Number(model.outputCostPer1M),
+    });
+
     return {
       appId: app.id,
       profileId: profile.id,
+      systemPrompt: activeVersion.systemPrompt,
       policy: resolveEffectivePolicy(basePolicy, overrides),
-      primaryModel: {
-        provider: activeVersion.primaryModel.provider.slug,
-        modelId: activeVersion.primaryModel.modelId,
-        baseUrl: activeVersion.primaryModel.provider.baseUrl,
-      },
+      primaryModel: toModelTarget(activeVersion.primaryModel),
+      fallbackModels: orderedFallbacks.map(toModelTarget),
       fallbackModelIds: activeVersion.fallbackModelIds,
     };
+  }
+
+  private decryptProviderKey(encryptedApiKey: string | null): string | undefined {
+    if (!encryptedApiKey) return undefined;
+    try {
+      return this.crypto.decryptSecret(encryptedApiKey);
+    } catch (error) {
+      this.logger.warn(
+        `[decryptProviderKey] Failed to decrypt provider key: ${(error as Error).message}`,
+      );
+      return undefined;
+    }
   }
 }

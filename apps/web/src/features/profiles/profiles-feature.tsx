@@ -15,6 +15,7 @@ import {
 } from "@devlab-ai-studio/ui";
 import { StudioQueryKey } from "@/constants/routes.constants";
 import { STUDIO_WEB_COPY } from "@/constants/ui-copy";
+import { notifyStudioError } from "@/lib/studio-error";
 import { useActiveApp } from "@/lib/active-app";
 import {
   createProfileVersion,
@@ -124,7 +125,7 @@ export function ProfilesFeature() {
       void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.PROFILES, targetSlug] });
       toast.success(STUDIO_WEB_COPY.PROFILES.VERSION_CREATED);
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const publishMutation = useMutation({
@@ -134,7 +135,7 @@ export function ProfilesFeature() {
       void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.PROFILES, targetSlug] });
       toast.success(STUDIO_WEB_COPY.PROFILES.VERSION_PUBLISHED);
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const addFallback = (event: KeyboardEvent<HTMLInputElement>) => {

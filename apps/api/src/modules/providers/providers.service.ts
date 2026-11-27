@@ -73,4 +73,12 @@ export class ProvidersService {
     this.logger.info(`[upsertModel] Upserting model "${input.modelId}"`);
     return this.repository.upsertModel(input);
   }
+
+  async deleteModel(id: string) {
+    const existing = await this.repository.findModelById(id);
+    if (!existing) throw new NotFoundException(`Model "${id}" not found`);
+
+    this.logger.info(`[deleteModel] Deleting model "${existing.modelId}"`);
+    return this.repository.deleteModelById(id);
+  }
 }
