@@ -5,12 +5,12 @@
  */
 
 import { z } from "zod";
+import { KEBAB_SLUG_REGEX } from "@yuva-devlab/regex";
 import {
   AgentCreativityPreset,
   CATALOG_BOUNDS,
   DEFAULT_AI_FEATURE_FLAGS,
   POLICY_BOUNDS,
-  STUDIO_REGEX,
 } from "@devlab-ai-studio/shared-types";
 import { AppAiFeatureFlagsSchema } from "./policy.schema";
 
@@ -18,7 +18,7 @@ const kebabSlugSchema = z
   .string()
   .min(CATALOG_BOUNDS.SLUG_MIN_LENGTH)
   .max(CATALOG_BOUNDS.SLUG_MAX_LENGTH)
-  .regex(STUDIO_REGEX.KEBAB_SLUG);
+  .regex(KEBAB_SLUG_REGEX);
 
 export const upsertProviderSchema = z.object({
   slug: kebabSlugSchema,

@@ -5,7 +5,8 @@
  */
 
 import { z } from "zod";
-import { CRYPTO_CONSTANTS, SERVER_DEFAULTS, STUDIO_REGEX } from "@devlab-ai-studio/shared-types";
+import { HEX_64_REGEX } from "@yuva-devlab/regex";
+import { CRYPTO_CONSTANTS, SERVER_DEFAULTS } from "@devlab-ai-studio/shared-types";
 
 const booleanFlagSchema = z
   .enum(["true", "false"])
@@ -24,7 +25,7 @@ export const apiEnvSchema = z
     LOG_ENABLED: booleanFlagSchema,
     LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
     LOG_REQUESTS: booleanFlagSchema,
-    MASTER_KEY_HEX: z.string().regex(STUDIO_REGEX.HEX_64).optional(),
+    MASTER_KEY_HEX: z.string().regex(HEX_64_REGEX).optional(),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== "production") return;
