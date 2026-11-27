@@ -33,7 +33,14 @@ export class AnalyticsRepository {
     return this.prisma.client.agentRun.findMany({
       where: { appId },
       include: {
-        attempts: { orderBy: { attemptIndex: "asc" } },
+        profile: { select: { slug: true, name: true } },
+        attempts: {
+          orderBy: { attemptIndex: "asc" },
+          include: {
+            model: { select: { modelId: true, displayName: true } },
+            provider: { select: { slug: true, name: true } },
+          },
+        },
         feedbacks: true,
       },
       orderBy: { createdAt: "desc" },

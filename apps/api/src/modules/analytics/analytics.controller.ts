@@ -16,13 +16,13 @@ export class AnalyticsController {
     return this.analyticsService.getSummary(appSlug);
   }
 
-  @Get("runs")
+  @Get(StudioApiRoute.ANALYTICS_RUNS)
   @ApiOperation({ summary: "List recent runs, attempts, and user feedback for a consumer app" })
   listRuns(@Param("appSlug") appSlug: string) {
     return this.analyticsService.listRecentRuns(appSlug);
   }
 
-  @Post("feedback")
+  @Post(StudioApiRoute.FEEDBACK)
   @ApiOperation({ summary: "Submit UP/DOWN quality feedback for a completed run" })
   submitFeedback(
     @Param("appSlug") appSlug: string,

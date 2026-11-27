@@ -12,3 +12,5 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - "@yuva-devlab/regex@0.4.1"
+  - "@yuva-devlab/tokens@2.3.0"
+  - "@yuva-devlab/ui@5.0.0"

@@ -47,4 +47,38 @@ export class AppsRepository {
       },
     });
   }
+
+  updateBySlug(
+    slug: string,
+    data: {
+      name?: string;
+      ownerEmail?: string;
+      mcpEndpointUrl?: string | null;
+      monthlyBudgetUsd?: number;
+      isActive?: boolean;
+      appKeyHash?: string;
+    },
+  ) {
+    return this.prisma.client.consumerApp.update({
+      where: { slug },
+      data,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        ownerEmail: true,
+        mcpEndpointUrl: true,
+        monthlyBudgetUsd: true,
+        isActive: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  deleteBySlug(slug: string) {
+    return this.prisma.client.consumerApp.delete({
+      where: { slug },
+      select: { id: true, slug: true, name: true },
+    });
+  }
 }

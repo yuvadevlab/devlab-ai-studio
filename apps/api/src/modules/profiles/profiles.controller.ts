@@ -32,7 +32,7 @@ export class ProfilesController {
     return this.profilesService.createProfileVersion(appSlug, body);
   }
 
-  @Patch(":profileSlug/publish")
+  @Patch(`:profileSlug/${StudioApiRoute.PROFILE_PUBLISH}`)
   @ApiOperation({ summary: "Publish or roll back a profile to a specific immutable version" })
   publishVersion(
     @Param("appSlug") appSlug: string,
