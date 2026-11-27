@@ -1,9 +1,32 @@
-import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
+import dotenv from "dotenv";
 import "reflect-metadata";
+
+const candidateEnvPaths = [
+  path.resolve(process.cwd(), ".env.local"),
+  path.resolve(process.cwd(), "apps/api/.env.local"),
+  path.resolve(__dirname, "../.env.local"),
+  path.resolve(__dirname, "../../.env.local"),
+  path.resolve(__dirname, "../../../apps/api/.env.local"),
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "apps/api/.env"),
+  path.resolve(__dirname, "../.env"),
+  path.resolve(__dirname, "../../.env"),
+  path.resolve(__dirname, "../../../apps/api/.env"),
+];
+
+for (const envPath of candidateEnvPaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath, override: false });
+  }
+}
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, type NestFastifyApplication } from "@nestjs/platform-fastify";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { Logger, loggerWithConfig, type LoggerConfig } from "@yuva-devlab/logger";
+import { AppStatus, createAppKillSwitchMiddleware } from "@yuva-devlab/auth-server";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { TransformInterceptor } from "./common/interceptors/transform.interceptor";
@@ -38,6 +61,43 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
+
+  let lastStatus = AppStatus.ACTIVE;
+  let lastCheckTime = 0;
+  const STATUS_CACHE_TTL_MS = 3000;
+  const killSwitch = createAppKillSwitchMiddleware(async () => {
+    const now = Date.now();
+    if (now - lastCheckTime < STATUS_CACHE_TTL_MS) return lastStatus;
+    try {
+      const portalBase = config.portalApiUrl.replace(/\/+$/, "");
+      const res = await fetch(
+        `${portalBase}/api/v1/platform/apps/${encodeURIComponent(config.appId)}/status`,
+        { signal: AbortSignal.timeout(1500), headers: { Accept: "application/json" } },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as { status?: string; isActive?: boolean };
+        lastStatus =
+          data.status === "INACTIVE" || data.isActive === false
+            ? AppStatus.INACTIVE
+            : data.status === "MAINTENANCE"
+              ? AppStatus.MAINTENANCE
+              : AppStatus.ACTIVE;
+        lastCheckTime = now;
+      }
+    } catch {
+      // Fail open in standalone/offline development scenarios
+    }
+    return lastStatus;
+  });
+
+  app.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    const rawUrl = req.url || "/";
+    if (rawUrl.includes("/health") || rawUrl.includes("/api/docs")) {
+      return next();
+    }
+    const allowed = await killSwitch(req, res);
+    if (allowed) next();
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle("DevLab AI Studio API")

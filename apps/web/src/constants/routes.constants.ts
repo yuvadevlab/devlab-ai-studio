@@ -5,11 +5,13 @@
  */
 
 import { SERVER_DEFAULTS } from "@devlab-ai-studio/shared-types";
+import { AuthQueryParamKey } from "./auth.constants";
 
 /** Canonical Next.js App Router paths in Studio Web. */
 export const StudioWebRoute = {
   OVERVIEW: "/",
   PROVIDERS: "/providers",
+  MODELS: "/models",
   APPS: "/apps",
   PROFILES: "/profiles",
   TELEMETRY: "/telemetry",
@@ -45,4 +47,22 @@ export const StudioWebDefaults = {
   DEFAULT_MODEL_CONTEXT: 128_000,
   DEFAULT_PROFILE_SLUG: "default-agent",
   DEFAULT_MONTHLY_BUDGET_USD: 500,
+  PORTAL_APP_ID: "ai-studio",
+  PORTAL_WEB_URL: process.env.NEXT_PUBLIC_DEVLAB_PORTAL_URL || "http://localhost:3000",
+  PORTAL_API_URL: process.env.NEXT_PUBLIC_DEVLAB_PORTAL_API_URL || "http://localhost:4000",
 } as const;
+
+/** Builds a DevLab Portal SSO login URL using centralized query parameter enums. */
+export function buildPortalLoginUrl(params: {
+  redirectUrl: string;
+  error?: string;
+  prompt?: string;
+}): string {
+  const base = StudioWebDefaults.PORTAL_WEB_URL.replace(/\/+$/, "");
+  const url = new URL(`${base}/login`);
+  url.searchParams.set(AuthQueryParamKey.APP, StudioWebDefaults.PORTAL_APP_ID);
+  url.searchParams.set(AuthQueryParamKey.REDIRECT, params.redirectUrl);
+  if (params.error) url.searchParams.set("error", params.error);
+  if (params.prompt) url.searchParams.set("prompt", params.prompt);
+  return url.toString();
+}

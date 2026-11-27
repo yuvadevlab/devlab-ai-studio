@@ -11,7 +11,7 @@ import {
   Switch,
 } from "@devlab-ai-studio/ui";
 import { STUDIO_WEB_COPY } from "@/constants/ui-copy";
-import type { StudioModel, StudioProvider } from "@/lib/studio-api";
+import type { StudioProvider } from "@/lib/studio-api";
 
 export interface ProviderFormDrawerProps {
   open: boolean;
@@ -107,95 +107,6 @@ export function ProviderFormDrawer(props: ProviderFormDrawerProps) {
           </Button>
         </div>
       </form>
-    </StudioDrawer>
-  );
-}
-
-export interface ProviderModelsDrawerProps {
-  provider: StudioProvider | null;
-  models: StudioModel[];
-  modelId: string;
-  modelName: string;
-  contextWindow: string;
-  costIn: string;
-  costOut: string;
-  pending: boolean;
-  onModelIdChange: (val: string) => void;
-  onModelNameChange: (val: string) => void;
-  onContextWindowChange: (val: string) => void;
-  onCostInChange: (val: string) => void;
-  onCostOutChange: (val: string) => void;
-  onClose: () => void;
-  onSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
-}
-
-/** Slide-over drawer for inspecting and registering models under a provider. */
-export function ProviderModelsDrawer(props: ProviderModelsDrawerProps) {
-  return (
-    <StudioDrawer
-      open={Boolean(props.provider)}
-      eyebrow={STUDIO_WEB_COPY.PROVIDERS.MODELS_DRAWER_EYEBROW}
-      title={`${STUDIO_WEB_COPY.PROVIDERS.MODELS_DRAWER_TITLE} ${props.provider?.name ?? ""}`}
-      closeAriaLabel={STUDIO_WEB_COPY.COMMON.CLOSE}
-      onClose={props.onClose}
-    >
-      <div className="studio-drawer-form">
-        {props.models.map((model) => (
-          <div key={model.id} className="studio-tag">
-            <strong>{model.displayName}</strong>
-            <span className="studio-muted-label">({model.modelId})</span>
-          </div>
-        ))}
-        <form className="studio-drawer-form" onSubmit={props.onSubmit}>
-          <p className="studio-form-note">{STUDIO_WEB_COPY.PROVIDERS.ADD_MODEL_TITLE}</p>
-          <StudioFormField label={STUDIO_WEB_COPY.PROVIDERS.FIELD_MODEL_ID}>
-            <Input
-              className="studio-mono"
-              value={props.modelId}
-              required
-              onChange={(event) => props.onModelIdChange(event.target.value)}
-            />
-          </StudioFormField>
-          <StudioFormField label={STUDIO_WEB_COPY.PROVIDERS.FIELD_MODEL_NAME}>
-            <Input
-              value={props.modelName}
-              required
-              onChange={(event) => props.onModelNameChange(event.target.value)}
-            />
-          </StudioFormField>
-          <StudioFormField label={STUDIO_WEB_COPY.PROVIDERS.FIELD_CONTEXT_WINDOW}>
-            <Input
-              className="studio-mono"
-              type="number"
-              value={props.contextWindow}
-              onChange={(event) => props.onContextWindowChange(event.target.value)}
-            />
-          </StudioFormField>
-          <StudioFormField label={STUDIO_WEB_COPY.PROVIDERS.FIELD_COST_IN}>
-            <Input
-              className="studio-mono"
-              type="number"
-              step="0.0001"
-              value={props.costIn}
-              onChange={(event) => props.onCostInChange(event.target.value)}
-            />
-          </StudioFormField>
-          <StudioFormField label={STUDIO_WEB_COPY.PROVIDERS.FIELD_COST_OUT}>
-            <Input
-              className="studio-mono"
-              type="number"
-              step="0.0001"
-              value={props.costOut}
-              onChange={(event) => props.onCostOutChange(event.target.value)}
-            />
-          </StudioFormField>
-          <div className="studio-drawer-actions">
-            <Button type="submit" disabled={props.pending}>
-              <Check size={14} /> {STUDIO_WEB_COPY.PROVIDERS.SAVE_MODEL}
-            </Button>
-          </div>
-        </form>
-      </div>
     </StudioDrawer>
   );
 }

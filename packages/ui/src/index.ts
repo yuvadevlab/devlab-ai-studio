@@ -79,6 +79,7 @@ export {
   Hexagon,
   LayoutDashboard,
   LoaderCircle,
+  LogOut,
   Moon,
   Pause,
   Pencil,

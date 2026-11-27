@@ -257,6 +257,19 @@
     border-bottom: 1px solid var(--studio-line);
   }
 
+  .studio-filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .studio-table-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .studio-filter-box {
     width: 160px;
     flex: 0 0 160px;
@@ -286,6 +299,19 @@
 
   .studio-small-link:hover {
     color: var(--studio-accent);
+  }
+
+  .studio-provider-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .studio-provider-link:hover {
+    text-decoration: underline;
   }
 
   .studio-log-window {

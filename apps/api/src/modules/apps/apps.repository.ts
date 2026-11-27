@@ -25,6 +25,20 @@ export class AppsRepository {
     return this.prisma.client.consumerApp.findUnique({ where: { slug } });
   }
 
+  findByKeyHash(appKeyHash: string) {
+    return this.prisma.client.consumerApp.findFirst({
+      where: { appKeyHash },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        isActive: true,
+        monthlyBudgetUsd: true,
+        mcpEndpointUrl: true,
+      },
+    });
+  }
+
   createApp(data: {
     slug: string;
     name: string;

@@ -53,6 +53,7 @@ export const upsertModelSchema = z.object({
   inputCostPer1M: z.number().nonnegative().default(CATALOG_BOUNDS.DEFAULT_COST_PER_1M),
   outputCostPer1M: z.number().nonnegative().default(CATALOG_BOUNDS.DEFAULT_COST_PER_1M),
   isActive: z.boolean().default(true),
+  isDeprecated: z.boolean().default(false),
 });
 
 export type UpsertModelInput = z.infer<typeof upsertModelSchema>;
@@ -128,3 +129,9 @@ export const submitRunFeedbackSchema = z.object({
 });
 
 export type SubmitRunFeedbackInput = z.infer<typeof submitRunFeedbackSchema>;
+
+export const verifyAppKeySchema = z.object({
+  appKey: z.string().min(1),
+});
+
+export type VerifyAppKeyInput = z.infer<typeof verifyAppKeySchema>;

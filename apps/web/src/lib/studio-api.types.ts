@@ -27,9 +27,10 @@ export interface StudioModel {
   modelId: string;
   displayName: string;
   contextWindow: number;
-  costPer1mInput: string | number;
-  costPer1mOutput: string | number;
+  inputCostPer1M: string | number;
+  outputCostPer1M: string | number;
   isActive: boolean;
+  isDeprecated: boolean;
   provider?: { slug: string; name: string };
 }
 

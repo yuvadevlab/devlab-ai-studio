@@ -7,11 +7,10 @@ import {
   EmptyState,
   LoadingState,
   Plus,
+  SearchInput,
   Server,
   StudioPageHeader,
   StudioPanel,
-  StudioProviderAccent,
-  StudioProviderCard,
   toast,
 } from "@devlab-ai-studio/ui";
 import { StudioQueryKey, StudioWebDefaults } from "@/constants/routes.constants";
@@ -21,39 +20,25 @@ import {
   fetchModels,
   fetchProviders,
   updateProvider,
-  upsertModel,
   upsertProvider,
   type StudioProvider,
 } from "@/lib/studio-api";
-import { ProviderFormDrawer, ProviderModelsDrawer } from "./provider-drawers";
+import { notifyStudioError } from "@/lib/studio-error";
+import { ProviderFormDrawer } from "./provider-drawers";
+import { ProvidersTable } from "./providers-table";
 
-function resolveProviderAccent(slug: string): StudioProviderAccent {
-  if (slug.includes("anthropic") || slug.includes("claude")) return StudioProviderAccent.COPPER;
-  if (slug.includes("google") || slug.includes("gemini")) return StudioProviderAccent.SKY;
-  if (slug.includes("mistral")) return StudioProviderAccent.SLATE;
-  return StudioProviderAccent.INDIGO;
-}
-
-/** Providers & Model Catalog feature with slide-over drawers backed by Control Plane API. */
+/** Providers management feature with table view and slide-over drawer. */
 export function ProvidersFeature() {
   const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<StudioProvider | null>(null);
-  const [modelsProvider, setModelsProvider] = useState<StudioProvider | null>(null);
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [baseUrl, setBaseUrl] = useState<string>(StudioWebDefaults.DEFAULT_BASE_URL);
   const [apiKey, setApiKey] = useState("");
   const [isActive, setIsActive] = useState(true);
-
-  const [modelId, setModelId] = useState("");
-  const [modelName, setModelName] = useState("");
-  const [contextWindow, setContextWindow] = useState(
-    String(StudioWebDefaults.DEFAULT_MODEL_CONTEXT),
-  );
-  const [costIn, setCostIn] = useState("0");
-  const [costOut, setCostOut] = useState("0");
 
   const { data: providers = [], isLoading } = useQuery({
     queryKey: [StudioQueryKey.PROVIDERS],
@@ -86,14 +71,7 @@ export function ProvidersFeature() {
       toast.success(STUDIO_WEB_COPY.PROVIDERS.PROVIDER_SAVED);
       setDrawerOpen(false);
     },
-    onError: (err: Error) => toast.error(err.message),
-  });
-
-  const toggleMutation = useMutation({
-    mutationFn: (provider: StudioProvider) =>
-      updateProvider(provider.slug, { isActive: !provider.isActive }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.PROVIDERS] }),
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const deleteMutation = useMutation({
@@ -102,29 +80,7 @@ export function ProvidersFeature() {
       void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.PROVIDERS] });
       toast.success(STUDIO_WEB_COPY.PROVIDERS.PROVIDER_DELETED);
     },
-    onError: (err: Error) => toast.error(err.message),
-  });
-
-  const saveModelMutation = useMutation({
-    mutationFn: () =>
-      upsertModel({
-        providerId: modelsProvider?.id ?? "",
-        modelId: modelId.trim(),
-        displayName: modelName.trim(),
-        capabilities: {},
-        contextWindow: Number(contextWindow) || StudioWebDefaults.DEFAULT_MODEL_CONTEXT,
-        inputCostPer1M: Number(costIn) || 0,
-        outputCostPer1M: Number(costOut) || 0,
-        isActive: true,
-      }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.MODELS] });
-      void queryClient.invalidateQueries({ queryKey: [StudioQueryKey.PROVIDERS] });
-      toast.success(STUDIO_WEB_COPY.PROVIDERS.MODEL_SAVED);
-      setModelId("");
-      setModelName("");
-    },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => notifyStudioError(err),
   });
 
   const openDrawer = (provider?: StudioProvider) => {
@@ -142,12 +98,20 @@ export function ProvidersFeature() {
     saveProviderMutation.mutate();
   };
 
-  const handleModelSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    saveModelMutation.mutate();
-  };
+  const modelCounts = new Map<string, number>();
+  for (const model of models) {
+    modelCounts.set(model.providerId, (modelCounts.get(model.providerId) ?? 0) + 1);
+  }
 
-  const providerModels = models.filter((m) => m.providerId === modelsProvider?.id);
+  const filteredProviders = providers.filter((provider) => {
+    if (!search.trim()) return true;
+    const term = search.trim().toLowerCase();
+    return (
+      provider.name.toLowerCase().includes(term) ||
+      provider.slug.toLowerCase().includes(term) ||
+      provider.baseUrl.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <div className="studio-page">
@@ -163,10 +127,21 @@ export function ProvidersFeature() {
         }
       />
 
-      {isLoading ? (
-        <LoadingState message={STUDIO_WEB_COPY.COMMON.LOADING} />
-      ) : providers.length === 0 ? (
-        <StudioPanel>
+      <StudioPanel
+        title={STUDIO_WEB_COPY.PROVIDERS.TITLE}
+        headerAction={
+          <SearchInput
+            wrapperClassName="studio-search-box"
+            aria-label={STUDIO_WEB_COPY.PROVIDERS.SEARCH_PLACEHOLDER}
+            placeholder={STUDIO_WEB_COPY.PROVIDERS.SEARCH_PLACEHOLDER}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        }
+      >
+        {isLoading ? (
+          <LoadingState message={STUDIO_WEB_COPY.COMMON.LOADING} />
+        ) : filteredProviders.length === 0 ? (
           <EmptyState
             icon={<Server size={19} />}
             title={STUDIO_WEB_COPY.PROVIDERS.EMPTY_TITLE}
@@ -177,41 +152,16 @@ export function ProvidersFeature() {
               </Button>
             }
           />
-        </StudioPanel>
-      ) : (
-        <div className="studio-provider-grid">
-          {providers.map((provider) => (
-            <StudioProviderCard
-              key={provider.id}
-              name={provider.name}
-              slug={provider.slug}
-              isActive={provider.isActive}
-              modelCount={
-                provider._count?.models ?? models.filter((m) => m.providerId === provider.id).length
-              }
-              keyPreview={provider.keyMask ?? STUDIO_WEB_COPY.PROVIDERS.KEY_UNSET}
-              accent={resolveProviderAccent(provider.slug)}
-              labels={{
-                modelsLabel: STUDIO_WEB_COPY.PROVIDERS.MODELS_LABEL,
-                keyLabel: STUDIO_WEB_COPY.PROVIDERS.KEY_LABEL,
-                activeLabel: STUDIO_WEB_COPY.COMMON.ACTIVE,
-                inactiveLabel: STUDIO_WEB_COPY.COMMON.INACTIVE,
-                editLabel: STUDIO_WEB_COPY.PROVIDERS.EDIT_ACTION,
-                toggleLabel: provider.isActive
-                  ? STUDIO_WEB_COPY.PROVIDERS.DEACTIVATE_ACTION
-                  : STUDIO_WEB_COPY.PROVIDERS.ACTIVATE_ACTION,
-                deleteLabel: STUDIO_WEB_COPY.PROVIDERS.DELETE_ACTION,
-                manageModelsLabel: STUDIO_WEB_COPY.PROVIDERS.MANAGE_MODELS,
-                actionsAriaLabel: `${STUDIO_WEB_COPY.PROVIDERS.EDIT_ACTION} ${provider.name}`,
-              }}
-              onEdit={() => openDrawer(provider)}
-              onToggle={() => toggleMutation.mutate(provider)}
-              onDelete={() => deleteMutation.mutate(provider.slug)}
-              onManageModels={() => setModelsProvider(provider)}
-            />
-          ))}
-        </div>
-      )}
+        ) : (
+          <ProvidersTable
+            providers={filteredProviders}
+            modelCounts={modelCounts}
+            pending={deleteMutation.isPending}
+            onEdit={openDrawer}
+            onDelete={(providerSlug) => deleteMutation.mutate(providerSlug)}
+          />
+        )}
+      </StudioPanel>
 
       <ProviderFormDrawer
         open={drawerOpen}
@@ -229,24 +179,6 @@ export function ProvidersFeature() {
         onActiveChange={setIsActive}
         onClose={() => setDrawerOpen(false)}
         onSubmit={handleSubmit}
-      />
-
-      <ProviderModelsDrawer
-        provider={modelsProvider}
-        models={providerModels}
-        modelId={modelId}
-        modelName={modelName}
-        contextWindow={contextWindow}
-        costIn={costIn}
-        costOut={costOut}
-        pending={saveModelMutation.isPending}
-        onModelIdChange={setModelId}
-        onModelNameChange={setModelName}
-        onContextWindowChange={setContextWindow}
-        onCostInChange={setCostIn}
-        onCostOutChange={setCostOut}
-        onClose={() => setModelsProvider(null)}
-        onSubmit={handleModelSubmit}
       />
     </div>
   );

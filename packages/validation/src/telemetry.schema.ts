@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { LlmRole } from "@yuva-devlab/agent-protocol";
 import {
   StudioAttemptStatus,
   StudioRunStatus,
@@ -12,14 +13,24 @@ import {
 } from "@devlab-ai-studio/shared-types";
 import { resolveProfileOverridesSchema } from "./policy.schema";
 
-export const gatewayRunRequestSchema = z.object({
-  appSlug: z.string().min(1),
-  profileSlug: z.string().min(1),
-  userId: z.string().min(1),
-  conversationId: z.string().optional(),
-  prompt: z.string().min(1),
-  overrides: resolveProfileOverridesSchema.optional(),
+export const gatewayMessageSchema = z.object({
+  role: z.enum([LlmRole.SYSTEM, LlmRole.USER, LlmRole.ASSISTANT]),
+  content: z.string().min(1),
 });
+
+export const gatewayRunRequestSchema = z
+  .object({
+    appSlug: z.string().min(1).optional(),
+    profileSlug: z.string().min(1),
+    userId: z.string().min(1).default("studio-user"),
+    conversationId: z.string().optional(),
+    prompt: z.string().min(1).optional(),
+    messages: z.array(gatewayMessageSchema).min(1).optional(),
+    overrides: resolveProfileOverridesSchema.optional(),
+  })
+  .refine((data) => Boolean(data.prompt || data.messages?.length), {
+    message: "Either prompt or messages must be provided",
+  });
 
 export type GatewayRunRequest = z.infer<typeof gatewayRunRequestSchema>;
 

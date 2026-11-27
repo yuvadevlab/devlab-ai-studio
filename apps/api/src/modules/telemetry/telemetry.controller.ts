@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { telemetryBatchSchema, type TelemetryBatchInput } from "@devlab-ai-studio/validation";
+import { Public } from "../../common/auth/public.decorator";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { TelemetryService } from "./telemetry.service";
 
@@ -9,6 +10,7 @@ import { TelemetryService } from "./telemetry.service";
 export class TelemetryController {
   constructor(private readonly telemetryService: TelemetryService) {}
 
+  @Public()
   @Post("ingest")
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({ summary: "Batch-ingest async run, attempt, and tool telemetry events" })
