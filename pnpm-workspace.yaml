@@ -9,3 +9,6 @@ allowBuilds:
   esbuild: true
   prisma: true
   unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - "@yuva-devlab/regex@0.4.1"

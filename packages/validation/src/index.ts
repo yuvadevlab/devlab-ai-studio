@@ -4,6 +4,7 @@
  * @module @devlab-ai-studio/validation
  */
 
+export * from "./control-plane.schema";
 export * from "./env.schema";
 export * from "./policy.schema";
 export * from "./telemetry.schema";
