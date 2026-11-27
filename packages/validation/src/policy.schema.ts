@@ -5,56 +5,66 @@
  */
 
 import { z } from "zod";
-import { AgentCreativityPreset, CREATIVITY_TEMPERATURE_MAP } from "@devlab-ai-studio/shared-types";
+import {
+  AgentCreativityPreset,
+  CREATIVITY_TEMPERATURE_MAP,
+  DEFAULT_AI_FEATURE_FLAGS,
+  POLICY_BOUNDS,
+} from "@devlab-ai-studio/shared-types";
 
 export const AppAiFeatureFlagsSchema = z.object({
-  enableAgentMode: z.boolean().default(true),
-  showReasoning: z.boolean().default(true),
-  showLiveConsole: z.boolean().default(true),
-  parallelToolCalls: z.boolean().default(true),
-  followUpSuggestions: z.boolean().default(true),
-  voiceInput: z.boolean().default(true),
+  enableAgentMode: z.boolean().default(DEFAULT_AI_FEATURE_FLAGS.enableAgentMode),
+  showReasoning: z.boolean().default(DEFAULT_AI_FEATURE_FLAGS.showReasoning),
+  showLiveConsole: z.boolean().default(DEFAULT_AI_FEATURE_FLAGS.showLiveConsole),
+  parallelToolCalls: z.boolean().default(DEFAULT_AI_FEATURE_FLAGS.parallelToolCalls),
+  followUpSuggestions: z.boolean().default(DEFAULT_AI_FEATURE_FLAGS.followUpSuggestions),
+  voiceInput: z.boolean().default(DEFAULT_AI_FEATURE_FLAGS.voiceInput),
 });
 
 export type AppAiFeatureFlags = z.infer<typeof AppAiFeatureFlagsSchema>;
 
+const creativityPresetSchema = z.enum([
+  AgentCreativityPreset.ANALYTICAL,
+  AgentCreativityPreset.BALANCED,
+  AgentCreativityPreset.CREATIVE,
+]);
+
 export const AppAiPolicySchema = z.object({
   appId: z.string().min(1),
   profileSlug: z.string().min(1),
-  profileVersion: z.number().int().positive().default(1),
-  creativityPreset: z
-    .enum([
-      AgentCreativityPreset.ANALYTICAL,
-      AgentCreativityPreset.BALANCED,
-      AgentCreativityPreset.CREATIVE,
-    ])
-    .default(AgentCreativityPreset.ANALYTICAL),
-  temperature: z.number().min(0).max(1.5).optional(),
-  maxTurns: z.number().int().min(1).max(20).default(8),
-  maxTokens: z.number().int().min(128).max(32768).default(4096),
+  profileVersion: z.number().int().positive().default(POLICY_BOUNDS.DEFAULT_PROFILE_VERSION),
+  creativityPreset: creativityPresetSchema.default(AgentCreativityPreset.ANALYTICAL),
+  temperature: z
+    .number()
+    .min(POLICY_BOUNDS.MIN_TEMPERATURE)
+    .max(POLICY_BOUNDS.MAX_TEMPERATURE)
+    .optional(),
+  maxTurns: z
+    .number()
+    .int()
+    .min(POLICY_BOUNDS.MIN_TURNS)
+    .max(POLICY_BOUNDS.MAX_TURNS)
+    .default(POLICY_BOUNDS.DEFAULT_TURNS),
+  maxTokens: z
+    .number()
+    .int()
+    .min(POLICY_BOUNDS.MIN_TOKENS)
+    .max(POLICY_BOUNDS.MAX_TOKENS)
+    .default(POLICY_BOUNDS.DEFAULT_TOKENS),
   enabledToolNamespaces: z.array(z.string()).default([]),
-  features: AppAiFeatureFlagsSchema.default({
-    enableAgentMode: true,
-    showReasoning: true,
-    showLiveConsole: true,
-    parallelToolCalls: true,
-    followUpSuggestions: true,
-    voiceInput: true,
-  }),
+  features: AppAiFeatureFlagsSchema.default({ ...DEFAULT_AI_FEATURE_FLAGS }),
 });
 
 export type AppAiPolicy = z.infer<typeof AppAiPolicySchema>;
 
 export const resolveProfileOverridesSchema = z.object({
-  creativityPreset: z
-    .enum([
-      AgentCreativityPreset.ANALYTICAL,
-      AgentCreativityPreset.BALANCED,
-      AgentCreativityPreset.CREATIVE,
-    ])
+  creativityPreset: creativityPresetSchema.optional(),
+  temperature: z
+    .number()
+    .min(POLICY_BOUNDS.MIN_TEMPERATURE)
+    .max(POLICY_BOUNDS.MAX_TEMPERATURE)
     .optional(),
-  temperature: z.number().min(0).max(1.5).optional(),
-  maxTurns: z.number().int().min(1).max(20).optional(),
+  maxTurns: z.number().int().min(POLICY_BOUNDS.MIN_TURNS).max(POLICY_BOUNDS.MAX_TURNS).optional(),
   features: AppAiFeatureFlagsSchema.partial().optional(),
 });
 
@@ -83,9 +93,12 @@ export function resolveEffectivePolicy(
 ): AppAiPolicy & { temperature: number } {
   const preset = overrides?.creativityPreset ?? base.creativityPreset;
   const rawTemp = overrides?.temperature ?? base.temperature ?? CREATIVITY_TEMPERATURE_MAP[preset];
-  const temperature = Math.min(1.5, Math.max(0, rawTemp));
+  const temperature = Math.min(
+    POLICY_BOUNDS.MAX_TEMPERATURE,
+    Math.max(POLICY_BOUNDS.MIN_TEMPERATURE, rawTemp),
+  );
   const maxTurns = overrides?.maxTurns
-    ? Math.min(base.maxTurns, Math.max(1, overrides.maxTurns))
+    ? Math.min(base.maxTurns, Math.max(POLICY_BOUNDS.MIN_TURNS, overrides.maxTurns))
     : base.maxTurns;
 
   return {

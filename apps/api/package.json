@@ -9,7 +9,7 @@
     "lint": "eslint \"src/**/*.ts\"",
     "clean": "rm -rf dist .turbo",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No unit tests yet for @devlab-ai-studio/api\""
+    "test": "vitest run"
   },
   "dependencies": {
     "@devlab-ai-studio/database": "workspace:*",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",
     "@types/node": "^22.10.1",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.18"
   }
 }

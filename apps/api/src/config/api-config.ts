@@ -10,6 +10,7 @@ export interface ApiConfig {
   logEnabled: boolean;
   logLevel: LogLevel;
   logRequests: boolean;
+  masterKeyHex: string;
 }
 
 /** Parses and validates process environment variables using {@link apiEnvSchema}. */
@@ -26,6 +27,7 @@ export function loadApiConfig(): ApiConfig {
     logEnabled: env.LOG_ENABLED,
     logLevel: env.LOG_LEVEL,
     logRequests: env.LOG_REQUESTS,
+    masterKeyHex: env.MASTER_KEY_HEX,
   };
 }
 
