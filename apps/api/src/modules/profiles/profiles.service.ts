@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Logger } from "@yuva-devlab/logger";
 import {
   AppAiPolicySchema,
   resolveEffectivePolicy,
   type AppAiPolicyOverrides,
+  type CreateProfileVersionInput,
+  type PublishProfileVersionInput,
   type ResolvedProfileResponse,
 } from "@devlab-ai-studio/validation";
 import { ProfilesRepository } from "./profiles.repository";
@@ -19,6 +21,35 @@ export class ProfilesService {
     const app = await this.repository.findAppBySlug(appSlug);
     if (!app) throw new NotFoundException(`Consumer app "${appSlug}" not found`);
     return this.repository.findProfilesByAppId(app.id);
+  }
+
+  async createProfileVersion(appSlug: string, input: CreateProfileVersionInput) {
+    this.logger.info(`[createProfileVersion] Creating version for "${appSlug}/${input.slug}"`);
+    const app = await this.repository.findAppBySlug(appSlug);
+    if (!app) throw new NotFoundException(`Consumer app "${appSlug}" not found`);
+    return this.repository.createProfileVersion(app.id, input);
+  }
+
+  async publishVersion(appSlug: string, profileSlug: string, input: PublishProfileVersionInput) {
+    this.logger.info(
+      `[publishVersion] Publishing "${appSlug}/${profileSlug}" -> ${input.versionId}`,
+    );
+    const app = await this.repository.findAppBySlug(appSlug);
+    if (!app) throw new NotFoundException(`Consumer app "${appSlug}" not found`);
+
+    const profile = await this.repository.findProfileWithVersions(app.id, profileSlug);
+    if (!profile) {
+      throw new NotFoundException(`Profile "${profileSlug}" not found for app "${appSlug}"`);
+    }
+
+    const exists = profile.versions.some((v) => v.id === input.versionId);
+    if (!exists) {
+      throw new BadRequestException(
+        `Version "${input.versionId}" does not belong to "${profileSlug}"`,
+      );
+    }
+
+    return this.repository.publishVersion(profile.id, input.versionId);
   }
 
   async resolveProfile(

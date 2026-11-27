@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { FeedbackRating, RunOutcomeStatus } from "@devlab-ai-studio/database";
+import type { SubmitRunFeedbackInput } from "@devlab-ai-studio/validation";
 import { Logger } from "@yuva-devlab/logger";
 import { AnalyticsRepository } from "./analytics.repository";
 
@@ -40,5 +41,23 @@ export class AnalyticsService {
         down: feedbackCounts.find((f) => f.rating === FeedbackRating.DOWN)?._count._all ?? 0,
       },
     };
+  }
+
+  async listRecentRuns(appSlug: string) {
+    this.logger.info(`[listRecentRuns] Listing recent runs for "${appSlug}"`);
+    const app = await this.repository.findAppBySlug(appSlug);
+    if (!app) throw new NotFoundException(`Consumer app "${appSlug}" not found`);
+    return this.repository.findRecentRuns(app.id);
+  }
+
+  async submitFeedback(appSlug: string, input: SubmitRunFeedbackInput) {
+    this.logger.info(`[submitFeedback] Recording ${input.rating} feedback for run ${input.runId}`);
+    const app = await this.repository.findAppBySlug(appSlug);
+    if (!app) throw new NotFoundException(`Consumer app "${appSlug}" not found`);
+
+    const run = await this.repository.findRunForApp(input.runId, app.id);
+    if (!run) throw new NotFoundException(`Run "${input.runId}" not found for app "${appSlug}"`);
+
+    return this.repository.createFeedback(input);
   }
 }

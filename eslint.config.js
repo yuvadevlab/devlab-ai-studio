@@ -21,6 +21,7 @@ export default tseslint.config(
       "**/.vercel/**",
       "**/out/**",
       "**/tsup.config.*",
+      "**/vitest.config.*",
       "**/next-env.d.ts",
       "**/.storybook/**",
       "**/storybook-static/**",

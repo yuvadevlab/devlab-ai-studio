@@ -1,13 +1,23 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
+import { CryptoModule } from "./common/crypto/crypto.module";
 import { PrismaModule } from "./common/prisma/prisma.module";
-import { ProvidersModule } from "./modules/providers/providers.module";
-import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
+import { AppsModule } from "./modules/apps/apps.module";
+import { ProfilesModule } from "./modules/profiles/profiles.module";
+import { ProvidersModule } from "./modules/providers/providers.module";
 import { TelemetryModule } from "./modules/telemetry/telemetry.module";
 
 @Module({
-  imports: [PrismaModule, ProvidersModule, ProfilesModule, AnalyticsModule, TelemetryModule],
+  imports: [
+    CryptoModule,
+    PrismaModule,
+    ProvidersModule,
+    AppsModule,
+    ProfilesModule,
+    AnalyticsModule,
+    TelemetryModule,
+  ],
   controllers: [AppController],
 })
 export class AppModule {}
