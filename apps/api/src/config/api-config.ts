@@ -1,6 +1,8 @@
 import { STUDIO_CONFIG } from "@devlab-ai-studio/shared-types";
-import { LogLevel } from "@yuva-devlab/logger";
+import { apiEnvSchema } from "@devlab-ai-studio/validation";
+import type { LogLevel } from "@yuva-devlab/logger";
 
+/** Validated runtime configuration for `apps/api`. */
 export interface ApiConfig {
   port: number;
   databaseUrl: string;
@@ -10,22 +12,20 @@ export interface ApiConfig {
   logRequests: boolean;
 }
 
+/** Parses and validates process environment variables using {@link apiEnvSchema}. */
 export function loadApiConfig(): ApiConfig {
-  const port = Number(process.env.PORT ?? 3100);
-  const databaseUrl =
-    process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/devlab_ai_studio";
-  const corsOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? "http://localhost:3101")
-    .split(",")
-    .map((o) => o.trim())
+  const env = apiEnvSchema.parse(process.env);
+  const corsOrigins = env.CORS_ALLOWED_ORIGINS.split(",")
+    .map((origin) => origin.trim())
     .filter(Boolean);
 
   return {
-    port: Number.isFinite(port) && port > 0 ? port : 3100,
-    databaseUrl,
+    port: env.PORT,
+    databaseUrl: env.DATABASE_URL,
     corsOrigins,
-    logEnabled: process.env.LOG_ENABLED !== "false",
-    logLevel: (process.env.LOG_LEVEL as LogLevel) ?? "info",
-    logRequests: process.env.LOG_REQUESTS !== "false",
+    logEnabled: env.LOG_ENABLED,
+    logLevel: env.LOG_LEVEL,
+    logRequests: env.LOG_REQUESTS,
   };
 }
 

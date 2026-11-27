@@ -60,6 +60,19 @@ export const resolveProfileOverridesSchema = z.object({
 
 export type AppAiPolicyOverrides = z.infer<typeof resolveProfileOverridesSchema>;
 
+/** Canonical resolved profile payload returned by `apps/api` and cached by `apps/gateway`. */
+export interface ResolvedProfileResponse {
+  appId: string;
+  profileId: string;
+  policy: AppAiPolicy & { temperature: number };
+  primaryModel: {
+    provider: string;
+    modelId: string;
+    baseUrl: string;
+  };
+  fallbackModelIds: string[];
+}
+
 /**
  * Resolves effective profile policy by clamping optional runtime overrides
  * within the published profile bounds.

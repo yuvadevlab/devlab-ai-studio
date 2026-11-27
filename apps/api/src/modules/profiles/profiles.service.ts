@@ -4,6 +4,7 @@ import {
   AppAiPolicySchema,
   resolveEffectivePolicy,
   type AppAiPolicyOverrides,
+  type ResolvedProfileResponse,
 } from "@devlab-ai-studio/validation";
 import { ProfilesRepository } from "./profiles.repository";
 
@@ -20,7 +21,11 @@ export class ProfilesService {
     return this.repository.findProfilesByAppId(app.id);
   }
 
-  async resolveProfile(appSlug: string, profileSlug: string, overrides?: AppAiPolicyOverrides) {
+  async resolveProfile(
+    appSlug: string,
+    profileSlug: string,
+    overrides?: AppAiPolicyOverrides,
+  ): Promise<ResolvedProfileResponse> {
     this.logger.info(`[resolveProfile] Resolving "${appSlug}/${profileSlug}"`);
     const app = await this.repository.findAppBySlug(appSlug);
     if (!app) throw new NotFoundException(`Consumer app "${appSlug}" not found`);
@@ -46,6 +51,8 @@ export class ProfilesService {
     });
 
     return {
+      appId: app.id,
+      profileId: profile.id,
       policy: resolveEffectivePolicy(basePolicy, overrides),
       primaryModel: {
         provider: activeVersion.primaryModel.provider.slug,
