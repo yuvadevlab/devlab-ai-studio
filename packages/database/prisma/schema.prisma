@@ -1,0 +1,226 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RunOutcomeStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  RECOVERED
+  CANCELLED
+}
+
+enum AttemptStatus {
+  SUCCESS
+  ERROR
+  TIMEOUT
+  RATE_LIMITED
+}
+
+enum FeedbackRating {
+  UP
+  DOWN
+}
+
+model Provider {
+  id              String         @id @default(uuid())
+  slug            String         @unique
+  name            String
+  baseUrl         String         @map("base_url")
+  encryptedApiKey String?        @map("encrypted_api_key")
+  keyMask         String?        @map("key_mask")
+  isActive        Boolean        @default(true) @map("is_active")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  models          ModelCatalog[]
+  attempts        LlmAttempt[]
+
+  @@map("providers")
+}
+
+model ModelCatalog {
+  id             String             @id @default(uuid())
+  providerId     String             @map("provider_id")
+  modelId        String             @map("model_id")
+  displayName    String             @map("display_name")
+  capabilities   Json               @default("{}")
+  contextWindow  Int                @default(128000) @map("context_window")
+  inputCostPer1M Decimal            @default(0) @map("input_cost_per_1m") @db.Decimal(12, 6)
+  outputCostPer1M Decimal           @default(0) @map("output_cost_per_1m") @db.Decimal(12, 6)
+  isActive       Boolean            @default(true) @map("is_active")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  provider       Provider           @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  primaryIn      AiProfileVersion[] @relation("PrimaryModel")
+  attempts       LlmAttempt[]
+
+  @@unique([providerId, modelId])
+  @@map("model_catalog")
+}
+
+model ConsumerApp {
+  id               String         @id @default(uuid())
+  slug             String         @unique
+  name             String
+  ownerEmail       String         @map("owner_email")
+  appKeyHash       String         @map("app_key_hash")
+  mcpEndpointUrl   String?        @map("mcp_endpoint_url")
+  monthlyBudgetUsd Decimal        @default(25) @map("monthly_budget_usd") @db.Decimal(12, 4)
+  isActive         Boolean        @default(true) @map("is_active")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  profiles         AiProfile[]
+  conversations    Conversation[]
+  runs             AgentRun[]
+
+  @@map("consumer_apps")
+}
+
+model AiProfile {
+  id                 String             @id @default(uuid())
+  appId              String             @map("app_id")
+  slug               String
+  name               String
+  publishedVersionId String?            @map("published_version_id")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  app                ConsumerApp        @relation(fields: [appId], references: [id], onDelete: Cascade)
+  versions           AiProfileVersion[]
+  runs               AgentRun[]
+
+  @@unique([appId, slug])
+  @@map("ai_profiles")
+}
+
+model AiProfileVersion {
+  id                    String       @id @default(uuid())
+  profileId             String       @map("profile_id")
+  version               Int
+  primaryModelId        String       @map("primary_model_id")
+  fallbackModelIds      String[]     @default([]) @map("fallback_model_ids")
+  creativityPreset      String       @default("analytical") @map("creativity_preset")
+  temperature           Float        @default(0.1)
+  maxTurns              Int          @default(8) @map("max_turns")
+  maxTokens             Int          @default(4096) @map("max_tokens")
+  featureFlags          Json         @default("{}") @map("feature_flags")
+  enabledToolNamespaces String[]     @default([]) @map("enabled_tool_namespaces")
+  systemPrompt          String       @default("") @map("system_prompt")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  profile               AiProfile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  primaryModel          ModelCatalog @relation("PrimaryModel", fields: [primaryModelId], references: [id])
+
+  @@unique([profileId, version])
+  @@map("ai_profile_versions")
+}
+
+model Conversation {
+  id          String     @id @default(uuid())
+  appId       String     @map("app_id")
+  userId      String     @map("user_id")
+  workspaceId String?    @map("workspace_id")
+  title       String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  app         ConsumerApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+  messages    Message[]
+  runs        AgentRun[]
+
+  @@index([appId, userId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  role           String
+  content        String
+  reasoning      String?
+  metadata       Json         @default("{}")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model AgentRun {
+  id              String           @id @default(uuid())
+  appId           String           @map("app_id")
+  profileId       String           @map("profile_id")
+  profileVersion  Int              @map("profile_version")
+  userId          String           @map("user_id")
+  conversationId  String?          @map("conversation_id")
+  status          RunOutcomeStatus @default(RUNNING)
+  durationMs      Int              @default(0) @map("duration_ms")
+  tokensIn        Int              @default(0) @map("tokens_in")
+  tokensOut       Int              @default(0) @map("tokens_out")
+  reasoningTokens Int              @default(0) @map("reasoning_tokens")
+  totalCostUsd    Decimal          @default(0) @map("total_cost_usd") @db.Decimal(12, 6)
+  errorCode       String?          @map("error_code")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  completedAt     DateTime?        @map("completed_at")
+  app             ConsumerApp      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  profile         AiProfile        @relation(fields: [profileId], references: [id])
+  conversation    Conversation?    @relation(fields: [conversationId], references: [id])
+  attempts        LlmAttempt[]
+  toolExecutions  ToolExecution[]
+  feedbacks       RunFeedback[]
+
+  @@index([appId, createdAt])
+  @@index([profileId, profileVersion])
+  @@map("agent_runs")
+}
+
+model LlmAttempt {
+  id           String        @id @default(uuid())
+  runId        String        @map("run_id")
+  providerId   String        @map("provider_id")
+  modelId      String        @map("model_id")
+  attemptIndex Int           @default(0) @map("attempt_index")
+  isFallback   Boolean       @default(false) @map("is_fallback")
+  ttftMs       Int?          @map("ttft_ms")
+  latencyMs    Int           @default(0) @map("latency_ms")
+  status       AttemptStatus
+  errorCode    String?       @map("error_code")
+  tokensIn     Int           @default(0) @map("tokens_in")
+  tokensOut    Int           @default(0) @map("tokens_out")
+  costUsd      Decimal       @default(0) @map("cost_usd") @db.Decimal(12, 6)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  run          AgentRun      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  provider     Provider      @relation(fields: [providerId], references: [id])
+  model        ModelCatalog  @relation(fields: [modelId], references: [id])
+
+  @@index([runId])
+  @@map("llm_attempts")
+}
+
+model ToolExecution {
+  id         String   @id @default(uuid())
+  runId      String   @map("run_id")
+  toolName   String   @map("tool_name")
+  durationMs Int      @default(0) @map("duration_ms")
+  ok         Boolean  @default(true)
+  errorCode  String?  @map("error_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+  run        AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("tool_executions")
+}
+
+model RunFeedback {
+  id        String         @id @default(uuid())
+  runId     String         @map("run_id")
+  userId    String         @map("user_id")
+  rating    FeedbackRating
+  comment   String?
+  createdAt DateTime       @default(now()) @map("created_at")
+  run       AgentRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("run_feedback")
+}

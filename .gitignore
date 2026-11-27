@@ -1,0 +1,12 @@
+node_modules
+dist
+.turbo
+.next
+coverage
+.env
+.env*.local
+*.tsbuildinfo
+.vercel
+__pycache__/
+*.py[cod]
+.venv/

@@ -1,0 +1,59 @@
+{
+  "name": "devlab-ai-studio",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuvadevlab/devlab-ai-studio.git"
+  },
+  "license": "MIT",
+  "author": "Yuva DevLab <yuva.devlab@gmail.com>",
+  "type": "module",
+  "packageManager": "pnpm@12.5.1",
+  "engines": {
+    "node": ">=24.16.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "clean": "turbo clean",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @devlab-ai-studio/database db:generate",
+    "db:validate": "pnpm --filter @devlab-ai-studio/database db:validate",
+    "prepare": "husky",
+    "postinstall": "pnpm db:generate"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@commitlint/types": "^21.2.0",
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22.20.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.8",
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.63.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs,ts,tsx}": [
+      "eslint --fix --max-warnings=0 --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css,scss}": [
+      "prettier --write"
+    ]
+  }
+}
