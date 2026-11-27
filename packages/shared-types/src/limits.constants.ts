@@ -47,14 +47,14 @@ export const CATALOG_BOUNDS = {
 
 /** Canonical server, cache, and stream defaults. */
 export const SERVER_DEFAULTS = {
-  API_PORT: 3100,
-  GATEWAY_PORT: 3102,
+  API_PORT: 4002,
+  GATEWAY_PORT: 8002,
   PROFILE_CACHE_TTL_MS: 30_000,
   TELEMETRY_STREAM_KEY: "devlab:ai:telemetry",
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/devlab_ai_studio",
-  STUDIO_API_URL: "http://localhost:3100",
-  API_CORS_ORIGINS: "http://localhost:3101",
-  GATEWAY_CORS_ORIGINS: "http://localhost:3001,http://localhost:3101",
+  STUDIO_API_URL: "http://localhost:4002",
+  API_CORS_ORIGINS: "http://localhost:3002",
+  GATEWAY_CORS_ORIGINS: "http://localhost:3001,http://localhost:3002",
 } as const;
 
 /** Cryptographic constants for AES-256-GCM secret encryption and app key generation. */

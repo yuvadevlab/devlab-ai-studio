@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { StudioApiRoute } from "@devlab-ai-studio/shared-types";
 import {
+  updateProviderSchema,
   upsertModelSchema,
   upsertProviderSchema,
+  type UpdateProviderInput,
   type UpsertModelInput,
   type UpsertProviderInput,
 } from "@devlab-ai-studio/validation";
@@ -25,6 +27,21 @@ export class ProvidersController {
   @ApiOperation({ summary: "Create or update an LLM provider (encrypts API key at rest)" })
   upsertProvider(@Body(new ZodValidationPipe(upsertProviderSchema)) body: UpsertProviderInput) {
     return this.providersService.upsertProvider(body);
+  }
+
+  @Patch(":slug")
+  @ApiOperation({ summary: "Update an LLM provider or toggle its active status" })
+  updateProvider(
+    @Param("slug") slug: string,
+    @Body(new ZodValidationPipe(updateProviderSchema)) body: UpdateProviderInput,
+  ) {
+    return this.providersService.updateProvider(slug, body);
+  }
+
+  @Delete(":slug")
+  @ApiOperation({ summary: "Delete an LLM provider by slug" })
+  deleteProvider(@Param("slug") slug: string) {
+    return this.providersService.deleteProvider(slug);
   }
 
   @Get(StudioApiRoute.PROVIDERS_MODELS)

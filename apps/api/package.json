@@ -15,6 +15,7 @@
     "@devlab-ai-studio/database": "workspace:*",
     "@devlab-ai-studio/shared-types": "workspace:*",
     "@devlab-ai-studio/validation": "workspace:*",
+    "@fastify/static": "^7.0.4",
     "@nestjs/common": "^10.4.15",
     "@nestjs/core": "^10.4.15",
     "@nestjs/platform-fastify": "^10.4.15",

@@ -12,14 +12,20 @@ export const StudioApiRoute = {
   PROVIDERS: "providers",
   PROVIDERS_MODELS: "models",
   APPS: "apps",
+  APPS_ROTATE_KEY: "rotate-key",
   PROFILES: "profiles",
+  PROFILE_PUBLISH: "publish",
   PROFILE_RESOLVE: "resolve",
   ANALYTICS: "analytics",
   ANALYTICS_SUMMARY: "summary",
+  ANALYTICS_RUNS: "runs",
   TELEMETRY: "telemetry",
   TELEMETRY_INGEST: "ingest",
   GATEWAY: "gateway",
   GATEWAY_RUNS_STREAM: "runs/stream",
+  GATEWAY_RUNS: "runs",
+  STREAM: "stream",
+  FEEDBACK: "feedback",
 } as const;
 
 /**
@@ -32,7 +38,9 @@ export const StudioApiRoute = {
  */
 export function buildStudioApiUrl(baseUrl: string, ...segments: string[]): string {
   const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  const encodedPath = [STUDIO_CONFIG.API_PREFIX, ...segments]
+  const encodedPath = [...STUDIO_CONFIG.API_PREFIX.split("/"), ...segments]
+    .flatMap((segment) => segment.split("/"))
+    .filter(Boolean)
     .map((segment) => encodeURIComponent(segment))
     .join("/");
   return new URL(encodedPath, normalizedBase).toString();

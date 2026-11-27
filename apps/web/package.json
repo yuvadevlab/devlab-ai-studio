@@ -1,0 +1,34 @@
+{
+  "name": "@devlab-ai-studio/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env.local --env-file-if-exists=.env node_modules/next/dist/bin/next dev -p 3002",
+    "build": "next build",
+    "start": "node --env-file-if-exists=.env.local --env-file-if-exists=.env node_modules/next/dist/bin/next start -p 3012",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rm -rf .next .turbo dist"
+  },
+  "dependencies": {
+    "@devlab-ai-studio/shared-types": "workspace:*",
+    "@devlab-ai-studio/ui": "workspace:*",
+    "@devlab-ai-studio/validation": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@tanstack/react-query": "^5.101.1",
+    "next": "^15.5.29",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.11"
+  }
+}
