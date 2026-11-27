@@ -1,0 +1,61 @@
+/**
+ * @file packages/ui/src/styles/studio-status-pill.css
+ * @description Semantic status pill badge with animated streaming indicator.
+ */
+
+@layer dl-components {
+  .studio-status-pill {
+    display: inline-flex;
+    min-height: 22px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 560;
+    white-space: nowrap;
+  }
+
+  .studio-status-pill::before {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+  }
+
+  .studio-status-pill--success {
+    border-color: color-mix(in oklab, var(--studio-success) 26%, transparent);
+    background: var(--studio-success-soft);
+    color: var(--studio-success);
+  }
+
+  .studio-status-pill--error {
+    border-color: color-mix(in oklab, var(--studio-danger) 24%, transparent);
+    background: var(--studio-danger-soft);
+    color: var(--studio-danger);
+  }
+
+  .studio-status-pill--streaming {
+    border-color: color-mix(in oklab, var(--studio-accent) 28%, transparent);
+    background: var(--studio-accent-soft);
+    color: var(--studio-accent);
+  }
+
+  .studio-status-pill--streaming::before {
+    animation: studio-pill-pulse 1.3s infinite;
+  }
+
+  .studio-status-pill--warning {
+    border-color: color-mix(in oklab, var(--studio-warning) 26%, transparent);
+    background: var(--studio-warning-soft);
+    color: var(--studio-warning);
+  }
+
+  @keyframes studio-pill-pulse {
+    50% {
+      opacity: 0.4;
+    }
+  }
+}

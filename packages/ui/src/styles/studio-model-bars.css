@@ -1,0 +1,67 @@
+/**
+ * @file packages/ui/src/styles/studio-model-bars.css
+ * @description Horizontal cost/usage bar breakdown list.
+ */
+
+@layer dl-components {
+  .studio-model-list {
+    display: grid;
+    padding: 4px 17px 6px;
+  }
+
+  .studio-model-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--studio-line);
+  }
+
+  .studio-model-item:last-child {
+    border-bottom: 0;
+  }
+
+  .studio-model-name {
+    overflow: hidden;
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .studio-model-provider {
+    margin-top: 3px;
+    color: var(--studio-text-dim);
+    font-size: 10px;
+  }
+
+  .studio-model-cost {
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: right;
+  }
+
+  .studio-model-requests {
+    margin-top: 3px;
+    color: var(--studio-text-dim);
+    font-size: 10px;
+    text-align: right;
+  }
+
+  .studio-model-track {
+    grid-column: 1 / -1;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--studio-line);
+  }
+
+  .studio-model-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--studio-accent);
+  }
+}

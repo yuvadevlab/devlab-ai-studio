@@ -28,11 +28,17 @@ export class AnalyticsService {
       .reduce((acc, r) => acc + r._count._all, 0);
     const failedRuns = runs.find((r) => r.status === RunOutcomeStatus.FAILED)?._count._all ?? 0;
 
+    const weightedDuration = runs.reduce(
+      (acc, r) => acc + (r._avg.durationMs ?? 0) * r._count._all,
+      0,
+    );
+
     return {
       appSlug: app.slug,
       totalRuns,
       successRate: totalRuns > 0 ? Number((successRuns / totalRuns).toFixed(4)) : 1,
       failedRuns,
+      avgLatencyMs: totalRuns > 0 ? Math.round(weightedDuration / totalRuns) : 0,
       totalCostUsd: runs.reduce((acc, r) => acc + Number(r._sum.totalCostUsd ?? 0), 0),
       totalTokensIn: runs.reduce((acc, r) => acc + (r._sum.tokensIn ?? 0), 0),
       totalTokensOut: runs.reduce((acc, r) => acc + (r._sum.tokensOut ?? 0), 0),

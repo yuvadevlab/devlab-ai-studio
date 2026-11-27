@@ -1,0 +1,14 @@
+@layer dl-components {
+  .studio-stream-box {
+    min-height: 160px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 0.5rem);
+    background: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    max-height: 360px;
+  }
+}

@@ -1,0 +1,395 @@
+/**
+ * @file apps/web/src/styles/studio-panels.css
+ * @description Page-level grids, forms, profile editor, telemetry terminal, and playground split-pane.
+ */
+
+@layer dl-app {
+  .studio-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .studio-overview-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .studio-panel-footnote {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 17px;
+    border-top: 1px solid var(--studio-line);
+    color: var(--studio-text-dim);
+    font-size: 11px;
+  }
+
+  .studio-drawer-form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .studio-form-note {
+    margin: 0;
+    color: var(--studio-text-soft);
+    font-size: 12px;
+  }
+
+  .studio-field {
+    display: grid;
+    min-width: 0;
+    gap: 7px;
+  }
+
+  .studio-field > span {
+    color: var(--studio-text-soft);
+    font-size: 11px;
+    font-weight: 540;
+  }
+
+  .studio-field > span small {
+    color: var(--studio-text-dim);
+    font-size: 10px;
+    font-weight: 400;
+  }
+
+  .studio-input,
+  .studio-select,
+  .studio-textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--studio-line);
+    border-radius: 6px;
+    outline: 0;
+    background: var(--studio-panel-raised);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 12px;
+  }
+
+  .studio-textarea {
+    min-height: 100px;
+    padding: 10px;
+    resize: vertical;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .studio-input:focus,
+  .studio-select:focus,
+  .studio-textarea:focus {
+    border-color: var(--studio-accent);
+  }
+
+  .studio-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--studio-line);
+    border-bottom: 1px solid var(--studio-line);
+  }
+
+  .studio-toggle-row > span {
+    display: grid;
+    gap: 3px;
+  }
+
+  .studio-toggle-row strong {
+    color: var(--foreground);
+    font-size: 12px;
+    font-weight: 550;
+  }
+
+  .studio-toggle-row small {
+    color: var(--studio-text-dim);
+    font-size: 11px;
+  }
+
+  .studio-drawer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--studio-line);
+  }
+
+  .studio-search {
+    display: flex;
+    width: min(260px, 100%);
+    height: 34px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid var(--studio-line);
+    border-radius: 6px;
+    background: var(--studio-panel-raised);
+    color: var(--studio-text-dim);
+  }
+
+  .studio-search input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--foreground);
+    font-size: 12px;
+  }
+
+  .studio-profile-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.75fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .studio-profile-list {
+    display: grid;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .studio-profile-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--foreground);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .studio-profile-item:hover {
+    background: var(--studio-panel-raised);
+  }
+
+  .studio-profile-item.is-selected {
+    background: var(--studio-accent-soft);
+  }
+
+  .studio-profile-edit {
+    padding: 18px;
+  }
+
+  .studio-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+    padding: 16px 0;
+  }
+
+  .studio-preset-group {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid var(--studio-line);
+    border-radius: 6px;
+    background: var(--studio-panel-raised);
+  }
+
+  .studio-preset-group button {
+    flex: 1;
+  }
+
+  .studio-feature-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+    border-top: 1px solid var(--studio-line);
+  }
+
+  .studio-feature-row {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid var(--studio-line);
+    color: var(--studio-text-soft);
+    font-size: 12px;
+  }
+
+  .studio-tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .studio-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid var(--studio-line);
+    border-radius: 5px;
+    background: var(--studio-panel-raised);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .studio-terminal {
+    overflow: hidden;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    background: var(--studio-panel);
+  }
+
+  .studio-telemetry-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--studio-line);
+  }
+
+  .studio-filter-box {
+    width: 160px;
+    flex: 0 0 160px;
+  }
+
+  .studio-telemetry-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .studio-search-box {
+    width: 240px;
+    flex: 0 0 240px;
+  }
+
+  .studio-small-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--foreground);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .studio-small-link:hover {
+    color: var(--studio-accent);
+  }
+
+  .studio-log-window {
+    height: min(460px, 54vh);
+    overflow: auto;
+    padding: 6px 0;
+    font-family: var(--font-mono);
+  }
+
+  .studio-log-row {
+    display: grid;
+    grid-template-columns: 96px 140px minmax(0, 1fr) 84px 72px 96px;
+    gap: 12px;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border-bottom: 1px solid color-mix(in oklab, var(--studio-line) 60%, transparent);
+    font-size: 11px;
+  }
+
+  .studio-playground-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.55fr);
+    min-height: 560px;
+    overflow: hidden;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    background: var(--studio-panel);
+  }
+
+  .studio-playground-config {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    padding: 16px;
+    border-right: 1px solid var(--studio-line);
+    background: color-mix(in oklab, var(--studio-panel-raised) 45%, transparent);
+  }
+
+  .studio-chat-pane {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    background-image:
+      linear-gradient(var(--studio-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--studio-grid) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .studio-chat-content {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+    overflow: auto;
+    padding: 20px;
+  }
+
+  .studio-chat-message {
+    display: grid;
+    max-width: 86%;
+    gap: 6px;
+  }
+
+  .studio-chat-message.is-user {
+    align-self: flex-end;
+  }
+
+  .studio-chat-bubble {
+    padding: 11px 14px;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    background: var(--studio-panel-raised);
+    color: var(--foreground);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .studio-chat-message.is-user .studio-chat-bubble {
+    border-color: color-mix(in oklab, var(--studio-accent) 34%, transparent);
+    background: var(--studio-accent-soft);
+  }
+
+  .studio-chat-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--studio-line);
+    background: var(--studio-panel);
+  }
+
+  @media (max-width: 1100px) {
+    .studio-kpi-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .studio-overview-grid,
+    .studio-profile-layout,
+    .studio-playground-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

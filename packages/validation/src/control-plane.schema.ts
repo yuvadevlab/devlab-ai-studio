@@ -30,6 +30,15 @@ export const upsertProviderSchema = z.object({
 
 export type UpsertProviderInput = z.infer<typeof upsertProviderSchema>;
 
+export const updateProviderSchema = z.object({
+  name: z.string().min(1).max(CATALOG_BOUNDS.NAME_MAX_LENGTH).optional(),
+  baseUrl: z.string().url().optional(),
+  apiKey: z.string().min(CATALOG_BOUNDS.API_KEY_MIN_LENGTH).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type UpdateProviderInput = z.infer<typeof updateProviderSchema>;
+
 export const upsertModelSchema = z.object({
   providerId: z.string().uuid(),
   modelId: z.string().min(1).max(CATALOG_BOUNDS.MODEL_ID_MAX_LENGTH),
@@ -57,6 +66,16 @@ export const createConsumerAppSchema = z.object({
 });
 
 export type CreateConsumerAppInput = z.infer<typeof createConsumerAppSchema>;
+
+export const updateConsumerAppSchema = z.object({
+  name: z.string().min(1).max(CATALOG_BOUNDS.NAME_MAX_LENGTH).optional(),
+  ownerEmail: z.string().email().optional(),
+  mcpEndpointUrl: z.string().url().nullable().optional(),
+  monthlyBudgetUsd: z.number().positive().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type UpdateConsumerAppInput = z.infer<typeof updateConsumerAppSchema>;
 
 export const createProfileVersionSchema = z.object({
   slug: kebabSlugSchema,
