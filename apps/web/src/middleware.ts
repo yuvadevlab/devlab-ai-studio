@@ -7,15 +7,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { AuthQueryParamKey, AuthStorageKey } from "@/constants/auth.constants";
 import { buildPortalLoginUrl } from "@/constants/routes.constants";
+import { STUDIO_SITE_CONFIG } from "@/constants/seo.constants";
 import { isJwtExpired } from "@/lib/jwt";
 
 const PUBLIC_ASSET_PATHS = new Set([
   "/apple-icon",
+  "/opengraph-image",
   "/icon.svg",
   "/favicon.ico",
   "/manifest.webmanifest",
   "/robots.txt",
+  "/sitemap.xml",
 ]);
+
+const PUBLIC_MARKETING_ROUTES = new Set<string>(STUDIO_SITE_CONFIG.PUBLIC_ROUTES);
 
 /**
  * Enforces DevLab Portal SSO authentication across Studio routes and exchanges
@@ -66,6 +71,10 @@ export function middleware(request: NextRequest) {
     request.cookies.get(AuthStorageKey.ACCESS_TOKEN_LEGACY)?.value;
 
   const isAuthenticated = Boolean(cookieToken && !isJwtExpired(cookieToken));
+  if (PUBLIC_MARKETING_ROUTES.has(pathname)) {
+    return NextResponse.next();
+  }
+
   if (!isAuthenticated) {
     const response = NextResponse.redirect(
       buildPortalLoginUrl({
@@ -89,6 +98,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|apple-icon|icon\\.svg|manifest\\.webmanifest|robots\\.txt|.*\\..*).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|opengraph-image|apple-icon|icon\\.svg|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml|.*\\..*).*)",
   ],
 };
