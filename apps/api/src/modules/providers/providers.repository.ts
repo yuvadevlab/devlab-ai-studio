@@ -35,8 +35,50 @@ export class ProvidersRepository {
         keyMask: true,
         isActive: true,
         createdAt: true,
+        _count: {
+          select: { models: true },
+        },
       },
       orderBy: { name: "asc" },
+    });
+  }
+
+  findProviderBySlug(slug: string) {
+    return this.prisma.client.provider.findUnique({ where: { slug } });
+  }
+
+  updateProviderBySlug(
+    slug: string,
+    data: {
+      name?: string;
+      baseUrl?: string;
+      encryptedApiKey?: string;
+      keyMask?: string;
+      isActive?: boolean;
+    },
+  ) {
+    return this.prisma.client.provider.update({
+      where: { slug },
+      data,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        baseUrl: true,
+        keyMask: true,
+        isActive: true,
+        updatedAt: true,
+        _count: {
+          select: { models: true },
+        },
+      },
+    });
+  }
+
+  deleteProviderBySlug(slug: string) {
+    return this.prisma.client.provider.delete({
+      where: { slug },
+      select: { id: true, slug: true, name: true },
     });
   }
 

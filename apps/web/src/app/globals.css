@@ -1,0 +1,22 @@
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+@import "@devlab-ai-studio/ui/styles.css";
+@import "../styles/studio-shell.css";
+@import "../styles/studio-panels.css";
+
+:root,
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}

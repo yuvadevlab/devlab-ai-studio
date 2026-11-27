@@ -1,6 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { Logger } from "@yuva-devlab/logger";
-import type { UpsertModelInput, UpsertProviderInput } from "@devlab-ai-studio/validation";
+import type {
+  UpdateProviderInput,
+  UpsertModelInput,
+  UpsertProviderInput,
+} from "@devlab-ai-studio/validation";
 import { CryptoService } from "../../common/crypto/crypto.service";
 import { ProvidersRepository } from "./providers.repository";
 
@@ -32,6 +36,32 @@ export class ProvidersService {
           }
         : {}),
     });
+  }
+
+  async updateProvider(slug: string, input: UpdateProviderInput) {
+    const existing = await this.repository.findProviderBySlug(slug);
+    if (!existing) throw new NotFoundException(`Provider "${slug}" not found`);
+
+    this.logger.info(`[updateProvider] Updating provider "${slug}"`);
+    return this.repository.updateProviderBySlug(slug, {
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
+      ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+      ...(input.apiKey
+        ? {
+            encryptedApiKey: this.crypto.encryptSecret(input.apiKey),
+            keyMask: this.crypto.maskApiKey(input.apiKey),
+          }
+        : {}),
+    });
+  }
+
+  async deleteProvider(slug: string) {
+    const existing = await this.repository.findProviderBySlug(slug);
+    if (!existing) throw new NotFoundException(`Provider "${slug}" not found`);
+
+    this.logger.info(`[deleteProvider] Deleting provider "${slug}"`);
+    return this.repository.deleteProviderBySlug(slug);
   }
 
   listModels() {
