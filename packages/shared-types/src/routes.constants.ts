@@ -13,6 +13,7 @@ export const StudioApiRoute = {
   PROVIDERS_MODELS: "models",
   APPS: "apps",
   APPS_ROTATE_KEY: "rotate-key",
+  APPS_VERIFY_KEY: "verify-key",
   PROFILES: "profiles",
   PROFILE_PUBLISH: "publish",
   PROFILE_RESOLVE: "resolve",

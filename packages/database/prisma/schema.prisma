@@ -52,6 +52,7 @@ model ModelCatalog {
   inputCostPer1M Decimal            @default(0) @map("input_cost_per_1m") @db.Decimal(12, 6)
   outputCostPer1M Decimal           @default(0) @map("output_cost_per_1m") @db.Decimal(12, 6)
   isActive       Boolean            @default(true) @map("is_active")
+  isDeprecated   Boolean            @default(false) @map("is_deprecated")
   createdAt      DateTime           @default(now()) @map("created_at")
   updatedAt      DateTime           @updatedAt @map("updated_at")
   provider       Provider           @relation(fields: [providerId], references: [id], onDelete: Cascade)

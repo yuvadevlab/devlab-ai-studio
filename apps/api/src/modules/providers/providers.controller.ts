@@ -55,4 +55,10 @@ export class ProvidersController {
   upsertModel(@Body(new ZodValidationPipe(upsertModelSchema)) body: UpsertModelInput) {
     return this.providersService.upsertModel(body);
   }
+
+  @Delete(`${StudioApiRoute.PROVIDERS_MODELS}/:id`)
+  @ApiOperation({ summary: "Delete a model catalog entry by ID" })
+  deleteModel(@Param("id") id: string) {
+    return this.providersService.deleteModel(id);
+  }
 }

@@ -9,6 +9,7 @@ import {
   HttpHeader,
   HttpHeaderValue,
   HttpMethod,
+  LlmRole,
   StudioApiRoute,
   type GatewayStreamEvent,
 } from "@devlab-ai-studio/shared-types";
@@ -20,7 +21,9 @@ import type {
   UpsertModelInput,
   UpsertProviderInput,
 } from "@devlab-ai-studio/validation";
+import { AuthStorageKey } from "@yuva-devlab/auth-client";
 import { StudioWebDefaults } from "@/constants/routes.constants";
+import { extractResponseError } from "./studio-error";
 import type {
   ApiEnvelope,
   StudioAgentRun,
@@ -51,18 +54,33 @@ function getGatewayBaseUrl(): string {
   return process.env.NEXT_PUBLIC_STUDIO_GATEWAY_URL || StudioWebDefaults.GATEWAY_URL;
 }
 
+function readPortalToken(): string | null {
+  if (typeof window === "undefined") return null;
+  const fromStorage =
+    window.localStorage.getItem(AuthStorageKey.TOKEN) ||
+    window.localStorage.getItem(AuthStorageKey.ACCESS_TOKEN_LEGACY);
+  if (fromStorage) return fromStorage;
+  const match = document.cookie.match(
+    new RegExp(
+      `(?:^|;\\s*)(?:${AuthStorageKey.TOKEN}|${AuthStorageKey.ACCESS_TOKEN_LEGACY})=([^;]+)`,
+    ),
+  );
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const token = readPortalToken();
   const response = await fetch(url, {
     ...init,
     headers: {
       [HttpHeader.CONTENT_TYPE]: HttpHeaderValue.APPLICATION_JSON,
+      ...(token ? { [HttpHeader.AUTHORIZATION]: `${HttpHeaderValue.BEARER_PREFIX}${token}` } : {}),
       ...init?.headers,
     },
   });
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => response.statusText);
-    throw new Error(errorText || `HTTP ${response.status}`);
+    throw await extractResponseError(response);
   }
 
   const envelope = (await response.json()) as ApiEnvelope<T>;
@@ -106,6 +124,20 @@ export function upsertModel(input: UpsertModelInput): Promise<StudioModel> {
   return requestJson<StudioModel>(
     buildStudioApiUrl(getApiBaseUrl(), StudioApiRoute.PROVIDERS, StudioApiRoute.PROVIDERS_MODELS),
     { method: HttpMethod.POST, body: JSON.stringify(input) },
+  );
+}
+
+export function deleteModel(
+  id: string,
+): Promise<{ id: string; modelId: string; displayName: string }> {
+  return requestJson<{ id: string; modelId: string; displayName: string }>(
+    buildStudioApiUrl(
+      getApiBaseUrl(),
+      StudioApiRoute.PROVIDERS,
+      StudioApiRoute.PROVIDERS_MODELS,
+      id,
+    ),
+    { method: HttpMethod.DELETE },
   );
 }
 
@@ -202,7 +234,7 @@ export function fetchRecentRuns(appSlug: string): Promise<StudioAgentRun[]> {
 }
 
 export async function streamGatewayRun(
-  params: { appKey: string; profileSlug: string; prompt: string },
+  params: { appKey: string; appSlug?: string; profileSlug: string; prompt: string },
   onEvent: (event: GatewayStreamEvent) => void,
 ): Promise<void> {
   const url = buildStudioApiUrl(
@@ -218,13 +250,15 @@ export async function streamGatewayRun(
       [HttpHeader.AUTHORIZATION]: `${HttpHeaderValue.BEARER_PREFIX}${params.appKey}`,
     },
     body: JSON.stringify({
+      ...(params.appSlug ? { appSlug: params.appSlug } : {}),
       profileSlug: params.profileSlug,
-      messages: [{ role: "user", content: params.prompt }],
+      prompt: params.prompt,
+      messages: [{ role: LlmRole.USER, content: params.prompt }],
     }),
   });
 
   if (!response.ok || !response.body) {
-    throw new Error((await response.text().catch(() => "")) || `HTTP ${response.status}`);
+    throw await extractResponseError(response);
   }
 
   const reader = response.body.getReader();

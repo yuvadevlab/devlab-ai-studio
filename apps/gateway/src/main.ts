@@ -1,5 +1,26 @@
-import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
+import dotenv from "dotenv";
 import "reflect-metadata";
+
+const candidateEnvPaths = [
+  path.resolve(process.cwd(), ".env.local"),
+  path.resolve(process.cwd(), "apps/gateway/.env.local"),
+  path.resolve(__dirname, "../.env.local"),
+  path.resolve(__dirname, "../../.env.local"),
+  path.resolve(__dirname, "../../../apps/gateway/.env.local"),
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "apps/gateway/.env"),
+  path.resolve(__dirname, "../.env"),
+  path.resolve(__dirname, "../../.env"),
+  path.resolve(__dirname, "../../../apps/gateway/.env"),
+];
+
+for (const envPath of candidateEnvPaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath, override: false });
+  }
+}
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, type NestFastifyApplication } from "@nestjs/platform-fastify";
 import { STUDIO_CONFIG } from "@devlab-ai-studio/shared-types";

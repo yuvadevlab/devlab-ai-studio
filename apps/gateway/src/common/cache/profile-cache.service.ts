@@ -11,6 +11,19 @@ interface CacheEntry {
   expiresAt: number;
 }
 
+export interface VerifiedAppInfo {
+  id: string;
+  slug: string;
+  name: string;
+  isActive: boolean;
+  monthlyBudgetUsd: number;
+}
+
+interface VerifiedAppCacheEntry {
+  value: VerifiedAppInfo;
+  expiresAt: number;
+}
+
 /**
  * Bounded TTL cache with singleflight request coalescing for resolved AI profiles.
  * Prevents Control Plane Postgres queries on the live SSE hot path and collapses
@@ -21,9 +34,38 @@ export class ProfileCacheService {
   private readonly logger = new Logger(ProfileCacheService.name);
   private readonly config = loadGatewayConfig();
   private readonly cache = new Map<string, CacheEntry>();
+  private readonly keyCache = new Map<string, VerifiedAppCacheEntry>();
   private readonly inFlight = new Map<string, Promise<ResolvedProfileResponse>>();
 
   constructor(private readonly httpClient: StudioHttpClient) {}
+
+  async verifyAppKey(appKey: string): Promise<VerifiedAppInfo> {
+    const now = Date.now();
+    const cached = this.keyCache.get(appKey);
+    if (cached && cached.expiresAt > now) {
+      return cached.value;
+    }
+
+    const url = buildStudioApiUrl(
+      this.config.studioApiUrl,
+      StudioApiRoute.APPS,
+      StudioApiRoute.APPS_VERIFY_KEY,
+    );
+    const verified = await this.httpClient.postJson<{ appKey: string }, VerifiedAppInfo>(url, {
+      appKey,
+    });
+
+    if (this.keyCache.size >= GATEWAY_LIMITS.MAX_CACHE_ENTRIES) {
+      const oldestKey = this.keyCache.keys().next().value;
+      if (oldestKey) this.keyCache.delete(oldestKey);
+    }
+
+    this.keyCache.set(appKey, {
+      value: verified,
+      expiresAt: Date.now() + this.config.profileCacheTtlMs,
+    });
+    return verified;
+  }
 
   async resolve(
     appSlug: string,

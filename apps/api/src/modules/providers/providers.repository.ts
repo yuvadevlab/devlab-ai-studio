@@ -19,6 +19,7 @@ export interface UpsertModelData {
   inputCostPer1M: number;
   outputCostPer1M: number;
   isActive: boolean;
+  isDeprecated: boolean;
 }
 
 @Injectable()
@@ -128,7 +129,19 @@ export class ProvidersRepository {
         inputCostPer1M: data.inputCostPer1M,
         outputCostPer1M: data.outputCostPer1M,
         isActive: data.isActive,
+        isDeprecated: data.isDeprecated,
       },
+    });
+  }
+
+  findModelById(id: string) {
+    return this.prisma.client.modelCatalog.findUnique({ where: { id } });
+  }
+
+  deleteModelById(id: string) {
+    return this.prisma.client.modelCatalog.delete({
+      where: { id },
+      select: { id: true, modelId: true, displayName: true },
     });
   }
 }

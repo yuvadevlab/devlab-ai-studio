@@ -2,7 +2,7 @@
 
 import { useState, type KeyboardEvent, type SyntheticEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { GatewayStreamEventType } from "@devlab-ai-studio/shared-types";
+import { AgentChatRole, GatewayStreamEventType } from "@devlab-ai-studio/shared-types";
 import {
   Bot,
   Button,
@@ -21,15 +21,15 @@ import {
   StudioStatusTone,
   Textarea,
   UserRound,
-  toast,
 } from "@devlab-ai-studio/ui";
 import { StudioQueryKey, StudioStorageKey, StudioWebDefaults } from "@/constants/routes.constants";
 import { STUDIO_WEB_COPY } from "@/constants/ui-copy";
 import { useActiveApp } from "@/lib/active-app";
+import { notifyStudioError } from "@/lib/studio-error";
 import { fetchApps, fetchProfiles, streamGatewayRun } from "@/lib/studio-api";
 
 interface ChatMessage {
-  role: "user" | "assistant";
+  role: AgentChatRole;
   content: string;
 }
 
@@ -67,8 +67,8 @@ export function PlaygroundFeature() {
     window.localStorage.setItem(StudioStorageKey.PLAYGROUND_APP_KEY, appKey.trim());
     setMessages((prev) => [
       ...prev,
-      { role: "user", content: prompt },
-      { role: "assistant", content: "" },
+      { role: AgentChatRole.USER, content: prompt },
+      { role: AgentChatRole.ASSISTANT, content: "" },
     ]);
     setDraft("");
     setStreaming(true);
@@ -76,13 +76,18 @@ export function PlaygroundFeature() {
     const startedAt = Date.now();
     try {
       await streamGatewayRun(
-        { appKey: appKey.trim(), profileSlug: resolvedProfileSlug, prompt },
+        {
+          appKey: appKey.trim(),
+          appSlug: targetSlug || undefined,
+          profileSlug: resolvedProfileSlug,
+          prompt,
+        },
         (sseEvent) => {
           if (sseEvent.type === GatewayStreamEventType.TOKEN) {
             setMessages((prev) => {
               const updated = [...prev];
               const last = updated[updated.length - 1];
-              if (last && last.role === "assistant") {
+              if (last && last.role === AgentChatRole.ASSISTANT) {
                 updated[updated.length - 1] = {
                   ...last,
                   content: last.content + sseEvent.content,
@@ -91,7 +96,7 @@ export function PlaygroundFeature() {
               return updated;
             });
           } else if (sseEvent.type === GatewayStreamEventType.ERROR) {
-            toast.error(sseEvent.error);
+            notifyStudioError(sseEvent.error);
           } else if (sseEvent.type === GatewayStreamEventType.DONE) {
             setUsage((prev) => ({
               ...prev,
@@ -101,7 +106,7 @@ export function PlaygroundFeature() {
         },
       );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : STUDIO_WEB_COPY.COMMON.UNEXPECTED_ERROR);
+      notifyStudioError(err);
     } finally {
       setStreaming(false);
     }
@@ -198,11 +203,15 @@ export function PlaygroundFeature() {
               messages.map((message, index) => (
                 <article
                   key={`${message.role}-${index}`}
-                  className={`studio-chat-message${message.role === "user" ? " is-user" : ""}`}
+                  className={`studio-chat-message${message.role === AgentChatRole.USER ? " is-user" : ""}`}
                 >
                   <div className="studio-mono">
-                    {message.role === "user" ? <UserRound size={12} /> : <Bot size={12} />}{" "}
-                    {message.role === "user"
+                    {message.role === AgentChatRole.USER ? (
+                      <UserRound size={12} />
+                    ) : (
+                      <Bot size={12} />
+                    )}{" "}
+                    {message.role === AgentChatRole.USER
                       ? STUDIO_WEB_COPY.PLAYGROUND.ROLE_USER
                       : STUDIO_WEB_COPY.PLAYGROUND.ROLE_ASSISTANT}
                   </div>

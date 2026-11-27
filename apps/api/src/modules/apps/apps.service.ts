@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { Logger } from "@yuva-devlab/logger";
 import type { CreateConsumerAppInput, UpdateConsumerAppInput } from "@devlab-ai-studio/validation";
 import { CryptoService } from "../../common/crypto/crypto.service";
@@ -71,5 +76,14 @@ export class AppsService {
     const { rawKey, keyHash } = this.crypto.generateAppKey();
     const app = await this.repository.updateBySlug(slug, { appKeyHash: keyHash });
     return { app, appKey: rawKey };
+  }
+
+  async verifyAppKey(rawKey: string) {
+    const keyHash = this.crypto.hashAppKey(rawKey);
+    const app = await this.repository.findByKeyHash(keyHash);
+    if (!app || !app.isActive) {
+      throw new UnauthorizedException("Invalid or inactive consumer app key");
+    }
+    return app;
   }
 }

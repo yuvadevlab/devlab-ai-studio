@@ -70,16 +70,26 @@ export const resolveProfileOverridesSchema = z.object({
 
 export type AppAiPolicyOverrides = z.infer<typeof resolveProfileOverridesSchema>;
 
+/** Resolved model target with decrypted provider credentials and pricing for Gateway execution. */
+export interface ResolvedModelTarget {
+  id: string;
+  providerId: string;
+  provider: string;
+  modelId: string;
+  baseUrl: string;
+  apiKey?: string;
+  inputCostPer1M: number;
+  outputCostPer1M: number;
+}
+
 /** Canonical resolved profile payload returned by `apps/api` and cached by `apps/gateway`. */
 export interface ResolvedProfileResponse {
   appId: string;
   profileId: string;
+  systemPrompt: string;
   policy: AppAiPolicy & { temperature: number };
-  primaryModel: {
-    provider: string;
-    modelId: string;
-    baseUrl: string;
-  };
+  primaryModel: ResolvedModelTarget;
+  fallbackModels: ResolvedModelTarget[];
   fallbackModelIds: string[];
 }
 
