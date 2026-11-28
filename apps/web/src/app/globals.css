@@ -1,6 +1,7 @@
 @import "@fontsource-variable/inter/wght.css";
 @import "@fontsource-variable/jetbrains-mono/wght.css";
 @import "@devlab-ai-studio/ui/styles.css";
+@import "@yuva-devlab/agent-ui/styles.css";
 @import "../styles/studio-shell.css";
 @import "../styles/studio-panels.css";
 @import "../styles/studio-marketing.css";
