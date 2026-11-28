@@ -14,5 +14,8 @@ minimumReleaseAgeExclude:
   - "@yuva-devlab/regex@0.4.1"
   - "@yuva-devlab/tokens@2.3.0"
   - "@yuva-devlab/ui@5.0.0"
-  - "@yuva-devlab/agent-protocol@0.2.0"
+  - "@yuva-devlab/agent-protocol@0.2.0 || 0.3.0"
   - "@yuva-devlab/agent-core@0.3.0"
+
+overrides:
+  react-resizable-panels: 4.12.4

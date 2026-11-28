@@ -9,9 +9,7 @@ import {
   HttpHeader,
   HttpHeaderValue,
   HttpMethod,
-  LlmRole,
   StudioApiRoute,
-  type GatewayStreamEvent,
 } from "@devlab-ai-studio/shared-types";
 import type {
   CreateConsumerAppInput,
@@ -233,51 +231,12 @@ export function fetchRecentRuns(appSlug: string): Promise<StudioAgentRun[]> {
   );
 }
 
-export async function streamGatewayRun(
-  params: { appKey: string; appSlug?: string; profileSlug: string; prompt: string },
-  onEvent: (event: GatewayStreamEvent) => void,
-): Promise<void> {
-  const url = buildStudioApiUrl(
+/** Canonical Gateway SSE stream URL. */
+export function getGatewayStreamUrl(): string {
+  return buildStudioApiUrl(
     getGatewayBaseUrl(),
     StudioApiRoute.GATEWAY,
     StudioApiRoute.GATEWAY_RUNS,
     StudioApiRoute.STREAM,
   );
-  const response = await fetch(url, {
-    method: HttpMethod.POST,
-    headers: {
-      [HttpHeader.CONTENT_TYPE]: HttpHeaderValue.APPLICATION_JSON,
-      [HttpHeader.AUTHORIZATION]: `${HttpHeaderValue.BEARER_PREFIX}${params.appKey}`,
-    },
-    body: JSON.stringify({
-      ...(params.appSlug ? { appSlug: params.appSlug } : {}),
-      profileSlug: params.profileSlug,
-      prompt: params.prompt,
-      messages: [{ role: LlmRole.USER, content: params.prompt }],
-    }),
-  });
-
-  if (!response.ok || !response.body) {
-    throw await extractResponseError(response);
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith("data:")) continue;
-      const payload = trimmed.slice(5).trim();
-      if (!payload || payload === "[DONE]") continue;
-      onEvent(JSON.parse(payload) as GatewayStreamEvent);
-    }
-  }
 }
